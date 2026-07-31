@@ -1857,8 +1857,11 @@ tailwind.config = {
 
     const pctEl = $('load-pct');
     let i = 0;
-    const per = 700;
-    const total = per * LOG_STEPS.length;
+    // 各処理の所要時間をランダムに揺らし、裏で実際にAIが処理しているように見せる。
+    // 全体はおよそ5.5〜10秒。AI分析ステップ（3段目）はとくに長めに振れる。
+    const durations = LOG_STEPS.map(() => 700 + Math.random() * 900);
+    durations[2] += 500 + Math.random() * 900;
+    const total = durations.reduce((a, b) => a + b, 0);
     const t0 = performance.now();
 
     const tick = () => {
@@ -1884,7 +1887,7 @@ tailwind.config = {
       // rAF が止まる環境（非表示タブ等）でも進捗が見えるようにフォールバック
       pctEl.textContent = Math.max(Number(pctEl.textContent) || 0,
                                    Math.round((i / nodes.length) * 100));
-      setTimeout(advance, per);
+      setTimeout(advance, durations[i - 1]);
     };
     advance();
   }
