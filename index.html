@@ -1,0 +1,2713 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAREER COMPASS ｜ AIキャリア診断＆生涯学習プラン提案</title>
+<meta name="description" content="9つの質問に答えるだけで、AIキャリアアナリストがあなた専用の生涯キャリア学習プランを設計します。">
+
+<!-- ファビコン：SVG を優先し、非対応ブラウザは PNG にフォールバック -->
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="favicon-16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+<meta name="theme-color" content="#05070F">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        ink:    { 900:'#05070F', 800:'#080B18', 700:'#0D1226', 600:'#141A33', 500:'#1D2445' },
+        gold:   { 300:'#F2E2B4', 400:'#E3C87F', 500:'#C9A24B', 600:'#A67F32' },
+        iris:   { 400:'#9C8CF7', 500:'#7C6BF0', 600:'#5D4BD4' },
+        mint:   { 400:'#5FD8BE', 500:'#34BFA3' },
+      },
+      fontFamily: {
+        serif: ['"Noto Serif JP"','serif'],
+        sans:  ['Outfit','"Noto Sans JP"','sans-serif'],
+      },
+      boxShadow: {
+        lift:  '0 24px 60px -20px rgba(0,0,0,.75)',
+        glow:  '0 0 0 1px rgba(201,162,75,.35), 0 20px 50px -25px rgba(201,162,75,.35)',
+      },
+    }
+  }
+}
+</script>
+<style>
+  :root { color-scheme: dark; }
+  html { scroll-behavior: smooth; }
+  body {
+    background:#05070F;
+    font-family: Outfit, "Noto Sans JP", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .font-jp-serif { font-family:"Noto Serif JP", serif; font-feature-settings:"palt"; }
+
+  /* ---------- 背景演出 ---------- */
+  .aurora { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+  .aurora span {
+    position:absolute; border-radius:9999px; filter:blur(90px); opacity:.42;
+    animation: drift 22s ease-in-out infinite alternate;
+  }
+  .aurora span:nth-child(1){ width:46rem;height:46rem; background:#5D4BD4; top:-14rem; left:-10rem; }
+  .aurora span:nth-child(2){ width:38rem;height:38rem; background:#C9A24B; bottom:-16rem; right:-8rem; animation-delay:-7s; opacity:.30; }
+  .aurora span:nth-child(3){ width:30rem;height:30rem; background:#34BFA3; top:38%; right:22%; animation-delay:-13s; opacity:.20; }
+  @keyframes drift { from { transform:translate3d(0,0,0) scale(1); } to { transform:translate3d(4rem,-3rem,0) scale(1.15); } }
+  .grid-veil {
+    position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.35;
+    background-image:linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+                     linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+
+  /* ---------- 共通パーツ ---------- */
+  .glass {
+    background: linear-gradient(160deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+    backdrop-filter: blur(18px) saturate(140%);
+    border:1px solid rgba(255,255,255,.10);
+  }
+  .hairline { border-top:1px solid rgba(255,255,255,.08); }
+  .gold-text {
+    background:linear-gradient(100deg,#F2E2B4,#C9A24B 45%,#F2E2B4);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .rule-gold { background:linear-gradient(90deg,transparent,#C9A24B,transparent); height:1px; }
+
+  /* 選択肢カード */
+  .opt {
+    position:relative; text-align:left; width:100%;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.035);
+    border-radius:1rem; padding:1rem 1.1rem;
+    transition: transform .22s cubic-bezier(.2,.7,.3,1), border-color .22s, background .22s, box-shadow .22s;
+  }
+  .opt:hover { transform:translateY(-3px); border-color:rgba(226,200,127,.55); background:rgba(255,255,255,.06); }
+  .opt:focus-visible { outline:2px solid #E3C87F; outline-offset:3px; }
+  .opt[aria-pressed="true"] {
+    border-color:#C9A24B;
+    background:linear-gradient(140deg, rgba(201,162,75,.20), rgba(124,107,240,.14));
+    box-shadow:0 0 0 1px rgba(201,162,75,.6), 0 18px 40px -22px rgba(201,162,75,.55);
+  }
+  .opt .tick {
+    position:absolute; top:.7rem; right:.7rem; width:1.35rem; height:1.35rem;
+    border-radius:9999px; display:grid; place-items:center;
+    border:1px solid rgba(255,255,255,.25); color:#05070F; font-size:.7rem; font-weight:700;
+    background:transparent; transition:.22s;
+  }
+  .opt[aria-pressed="true"] .tick { background:#E3C87F; border-color:#E3C87F; }
+  .opt[aria-pressed="true"] .tick::after { content:"✓"; }
+
+  /* 出現アニメーション */
+  .rise { opacity:0; transform:translateY(18px); animation:rise .7s cubic-bezier(.2,.7,.3,1) forwards; }
+  @keyframes rise { to { opacity:1; transform:none; } }
+  .stage-in { animation:stageIn .45s cubic-bezier(.2,.7,.3,1); }
+  @keyframes stageIn { from { opacity:0; transform:translateY(14px) scale(.995); } to { opacity:1; transform:none; } }
+
+  /* ローディング */
+  .orb { position:relative; width:132px; height:132px; }
+  .orb::before, .orb::after {
+    content:''; position:absolute; inset:0; border-radius:9999px;
+  }
+  .orb::before { background:conic-gradient(from 0deg,#C9A24B,#7C6BF0,#34BFA3,#C9A24B); animation:spin 2.6s linear infinite; filter:blur(2px); }
+  .orb::after  { inset:9px; background:#080B18; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .orb-core {
+    position:absolute; inset:0; z-index:2;
+    display:flex; align-items:center; justify-content:center; gap:.08em;
+    font-family:Outfit; font-weight:700; font-size:1.6rem; color:#F2E2B4;
+  }
+  .pulse-ring { position:absolute; inset:-18px; border-radius:9999px; border:1px solid rgba(201,162,75,.35); animation:pulse 2.2s ease-out infinite; }
+  @keyframes pulse { 0%{transform:scale(.9);opacity:.8} 100%{transform:scale(1.25);opacity:0} }
+  .log-line { opacity:.25; transition:opacity .45s, color .45s, transform .45s; transform:translateX(-4px); }
+  .log-line.active { opacity:1; color:#F2E2B4; transform:none; }
+  .log-line.done { opacity:.75; }
+  .shimmer {
+    background:linear-gradient(90deg, rgba(201,162,75,.15), rgba(242,226,180,.85), rgba(201,162,75,.15));
+    background-size:220% 100%; animation:shimmer 1.5s linear infinite;
+  }
+  @keyframes shimmer { to { background-position:-220% 0; } }
+
+  /* メーター */
+  .meter { height:6px; border-radius:9999px; background:rgba(255,255,255,.08); overflow:hidden; }
+  .meter > i { display:block; height:100%; border-radius:9999px; width:0; transition:width 1.1s cubic-bezier(.2,.7,.3,1); }
+
+  /* ---------- ガントチャート ---------- */
+  /* 1列目=学習テーマ名、2〜13列目=1〜12ヶ月。セル・バーはすべて grid-row:1 に重ねて配置する */
+  .g-row {
+    display:grid;
+    grid-template-columns:12rem repeat(12, minmax(0,1fr));
+    align-items:center; min-height:2.6rem;
+  }
+  .g-row + .g-row { border-top:1px solid rgba(255,255,255,.05); }
+  .g-label {
+    grid-column:1; grid-row:1; padding-right:1rem; text-align:right;
+    font-size:12px; line-height:1.4; color:#CBD5E1;
+  }
+  .g-cell { grid-row:1; align-self:stretch; border-left:1px solid rgba(255,255,255,.055); }
+  .g-bar {
+    grid-row:1; z-index:2; height:1.65rem; border-radius:9999px;
+    display:flex; align-items:center; gap:.35rem; padding:0 .65rem;
+    font-size:10.5px; font-weight:700; white-space:nowrap; overflow:hidden;
+    box-shadow:0 8px 20px -12px rgba(0,0,0,.9);
+    transform:scaleX(.02); transform-origin:left center;
+    transition:transform .8s cubic-bezier(.2,.7,.3,1);
+  }
+  .g-bar.on { transform:scaleX(1); }
+  .g-phase {
+    grid-row:1; z-index:1; height:1.35rem; border-radius:.4rem;
+    display:grid; place-items:center; font-size:10px; letter-spacing:.14em;
+  }
+
+  /* ---------- 会員機能（モーダル・フォーム・進捗ガント） ---------- */
+  .modal { position:fixed; inset:0; z-index:60; display:grid; place-items:center; padding:1.25rem; }
+  .modal[hidden] { display:none; }
+  .modal-backdrop { position:absolute; inset:0; background:rgba(3,5,12,.74); backdrop-filter:blur(6px); }
+  .modal-panel { position:relative; width:100%; max-height:calc(100vh - 3rem); overflow-y:auto; }
+  .modal-panel:focus { outline:none; }
+
+  .field {
+    width:100%; border-radius:.8rem;
+    border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.045);
+    padding:.75rem 1rem; font-size:14px; color:#E2E8F0;
+    transition:border-color .2s, background .2s;
+  }
+  .field:focus { outline:none; border-color:#C9A24B; background:rgba(255,255,255,.07); }
+  .field::placeholder { color:#64748B; }
+
+  .tab-btn {
+    border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.03);
+    border-radius:.8rem; padding:.65rem; font-size:13.5px; font-weight:600; color:#94A3B8; transition:.2s;
+  }
+  .tab-btn:hover { color:#E2E8F0; background:rgba(255,255,255,.06); }
+  .tab-btn[aria-selected="true"] {
+    background:linear-gradient(140deg, rgba(201,162,75,.20), rgba(124,107,240,.14));
+    border-color:rgba(201,162,75,.6); color:#F2E2B4;
+  }
+
+  .st-btn {
+    border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.04);
+    border-radius:.7rem; padding:.5rem .9rem; font-size:12.5px; color:#CBD5E1; transition:.2s;
+  }
+  .st-btn:hover { background:rgba(255,255,255,.08); color:#F1F5F9; }
+  .st-btn[aria-pressed="true"] { border-color:#C9A24B; background:rgba(201,162,75,.16); color:#F2E2B4; }
+
+  /* マイページのガント：バーをボタン化し、状態を可視化する */
+  .g-task { cursor:pointer; border:0; text-align:left; }
+  .g-task:hover { filter:brightness(1.15); box-shadow:0 0 0 1px rgba(255,255,255,.4), 0 8px 20px -12px rgba(0,0,0,.9); }
+  .g-task:focus-visible { outline:2px solid #E3C87F; outline-offset:2px; }
+  .g-task[data-status="done"] { opacity:.5; }
+  .g-task[data-status="doing"] { box-shadow:0 0 0 1.5px rgba(95,216,190,.85), 0 8px 20px -12px rgba(0,0,0,.9); }
+
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:#05070F; }
+  ::-webkit-scrollbar-thumb { background:#1D2445; border-radius:9999px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  }
+  @media print {
+    .aurora, .grid-veil, .no-print { display:none !important; }
+    body { background:#fff; color:#000; }
+  }
+</style>
+</head>
+<body class="text-slate-200 antialiased">
+
+<div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+<div class="grid-veil" aria-hidden="true"></div>
+
+<div class="relative z-10">
+
+  <!-- ============ ヘッダー ============ -->
+  <header class="sticky top-0 z-40 border-b border-white/5 bg-ink-900/70 backdrop-blur-xl">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+      <a href="#" id="btn-home" aria-label="トップページへ戻る"
+         class="group flex items-center gap-3 rounded-xl px-1.5 py-1 transition hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-300">
+        <div class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 font-bold text-ink-900 transition group-hover:brightness-110">C</div>
+        <div class="leading-tight">
+          <p class="text-[15px] font-semibold tracking-[.22em] text-gold-300">CAREER COMPASS</p>
+          <p class="text-[10px] tracking-[.3em] text-slate-500">AI LIFELONG LEARNING DESIGN</p>
+        </div>
+      </a>
+      <div class="flex items-center gap-4">
+        <div class="hidden items-center gap-2 text-[11px] tracking-[.18em] text-slate-400 md:flex">
+          <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-mint-400"></span>
+          AI ANALYST ONLINE
+        </div>
+        <button id="btn-login"
+          class="rounded-xl border border-gold-500/40 bg-gold-500/10 px-4 py-2 text-[13px] font-semibold text-gold-300 transition hover:bg-gold-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-300">
+          ログイン
+        </button>
+        <div id="hdr-user" class="hidden items-center gap-2">
+          <button id="btn-mypage"
+            class="rounded-xl bg-gradient-to-r from-gold-400 to-gold-600 px-4 py-2 text-[13px] font-bold text-ink-900 transition hover:-translate-y-0.5 hover:shadow-glow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-300">
+            マイページ
+          </button>
+          <button id="btn-logout"
+            class="rounded-xl px-3 py-2 text-[12px] text-slate-400 transition hover:bg-white/5 hover:text-slate-200">
+            ログアウト
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ ① イントロ ============ -->
+  <section id="view-intro" class="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+    <div class="rise" style="animation-delay:.05s">
+      <p class="mb-5 inline-flex items-center gap-2 rounded-full border border-gold-500/30 bg-gold-500/5 px-4 py-1.5 text-[11px] tracking-[.24em] text-gold-300">
+        CAREER DIAGNOSIS ／ 所要 約2分
+      </p>
+    </div>
+    <h1 class="font-jp-serif rise text-[2.1rem] font-bold leading-[1.35] sm:text-[3.1rem]" style="animation-delay:.12s">
+      あなたの<span class="gold-text">10年後</span>を、<br class="sm:hidden">
+      AIが設計する。
+    </h1>
+    <p class="rise mt-6 max-w-2xl text-[15px] leading-relaxed text-slate-400 sm:text-base" style="animation-delay:.2s">
+      9つの質問に答えるだけ。年収・価値観・得意領域・譲れない条件までを踏まえて、
+      AIキャリアアナリストがあなたの現在地と潜在能力を解析し、<strong class="font-medium text-slate-200">生涯キャリア学習プラン</strong>を提案します。
+    </p>
+
+    <div class="rise mt-10 flex flex-wrap items-center gap-4" style="animation-delay:.28s">
+      <button id="btn-start" class="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-gold-400 to-gold-600 px-8 py-4 text-[15px] font-bold text-ink-900 shadow-glow transition hover:-translate-y-0.5 hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold-300">
+        無料で診断をはじめる
+        <span class="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>
+      </button>
+      <p class="text-xs text-slate-500">診断は登録不要・その場で結果表示<br>無料会員登録で、専用の学習ガントチャートと教材も</p>
+    </div>
+
+    <div class="rise mt-16 grid gap-5 sm:grid-cols-3" style="animation-delay:.36s">
+      <div class="glass rounded-2xl p-6">
+        <p class="text-[10px] tracking-[.22em] text-slate-500">STEP 1 ／ 診断</p>
+        <p class="font-jp-serif mt-2 text-2xl text-gold-300">現在地の可視化</p>
+        <p class="mt-3 text-sm leading-relaxed text-slate-400">9つの質問から6軸のキャリアスコアを算出し、市場価値と伸びしろを数値化します。</p>
+      </div>
+      <div class="glass rounded-2xl p-6">
+        <p class="text-[10px] tracking-[.22em] text-slate-500">STEP 2 ／ 無料会員登録で</p>
+        <p class="font-jp-serif mt-2 text-2xl text-gold-300">専用ガントチャート</p>
+        <p class="mt-3 text-sm leading-relaxed text-slate-400">診断結果をきめ細かい学習タスクに分解。進捗（未着手・進行中・完了）を保存しながら進められます。</p>
+      </div>
+      <div class="glass rounded-2xl p-6">
+        <p class="text-[10px] tracking-[.22em] text-slate-500">STEP 3 ／ 学ぶ</p>
+        <p class="font-jp-serif mt-2 text-2xl text-gold-300">連動した教材</p>
+        <p class="mt-3 text-sm leading-relaxed text-slate-400">ガントチャートの各タスクから、対応する教材をそのまま開いて学べます（教材は順次公開予定）。</p>
+      </div>
+    </div>
+
+    <p class="mt-14 text-[11px] leading-relaxed text-slate-600">
+      ※ 本ページはデモです。表示されるスコア・年収レンジ・市場指標はすべてサンプル値です。特定のサービスへの誘導は行いません。
+    </p>
+  </section>
+
+  <!-- ============ ② 診断フォーム ============ -->
+  <section id="view-quiz" class="mx-auto hidden max-w-4xl px-5 py-12 sm:py-16">
+    <!-- プログレス -->
+    <div class="mb-9">
+      <div class="mb-3 flex items-end justify-between">
+        <p class="text-[11px] tracking-[.26em] text-slate-500">
+          STEP <span id="q-index" class="text-gold-300">1</span> / <span id="q-total">9</span>
+        </p>
+        <p class="font-sans text-2xl font-semibold text-gold-300"><span id="q-percent">0</span><span class="text-sm text-slate-500">%</span></p>
+      </div>
+      <div class="h-[7px] overflow-hidden rounded-full bg-white/[.06]">
+        <div id="q-bar" class="h-full w-0 rounded-full bg-gradient-to-r from-iris-500 via-gold-400 to-gold-300 transition-[width] duration-500 ease-out"></div>
+      </div>
+    </div>
+
+    <div id="q-stage" class="glass rounded-3xl p-6 shadow-lift sm:p-9">
+      <p id="q-cat" class="text-[11px] tracking-[.26em] text-iris-400">CURRENT POSITION</p>
+      <h2 id="q-title" class="font-jp-serif mt-3 text-[1.4rem] font-bold leading-snug sm:text-[1.75rem]"></h2>
+      <p id="q-hint" class="mt-3 text-sm leading-relaxed text-slate-400"></p>
+      <p id="q-multi" class="mt-4 hidden w-fit rounded-lg border border-iris-500/25 bg-iris-500/10 px-3 py-2 text-xs text-iris-400">複数選択できます（当てはまるものすべて）</p>
+
+      <div id="q-options" class="mt-6 grid gap-3 sm:grid-cols-2"></div>
+
+      <p id="q-error" class="mt-5 hidden text-sm text-rose-300" role="alert" aria-live="polite"></p>
+
+      <div class="hairline mt-8 flex items-center justify-between pt-6">
+        <button id="btn-prev" class="rounded-xl px-4 py-2.5 text-sm text-slate-400 transition hover:bg-white/5 hover:text-slate-200 disabled:cursor-not-allowed disabled:opacity-30">← 戻る</button>
+        <button id="btn-next" class="rounded-xl bg-gradient-to-r from-gold-400 to-gold-600 px-7 py-3 text-sm font-bold text-ink-900 transition hover:-translate-y-0.5 hover:shadow-glow">次へ</button>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-center gap-1.5" id="q-dots"></div>
+  </section>
+
+  <!-- ============ ③ 解析中 ============ -->
+  <section id="view-loading" class="mx-auto hidden max-w-2xl px-5 py-24">
+    <div class="flex flex-col items-center">
+      <div class="relative grid place-items-center">
+        <div class="pulse-ring"></div>
+        <div class="orb"><div class="orb-core"><span id="load-pct">0</span>%</div></div>
+      </div>
+      <p class="mt-10 text-[11px] tracking-[.3em] text-gold-300">ANALYZING YOUR CAREER DATA</p>
+      <h2 class="font-jp-serif mt-3 text-center text-xl font-bold sm:text-2xl">AIがあなたのプランを構築しています</h2>
+
+      <div class="glass mt-9 w-full rounded-2xl p-6">
+        <ul id="load-log" class="space-y-3 font-sans text-[13px]"></ul>
+        <div class="mt-6 h-[3px] overflow-hidden rounded-full bg-white/5">
+          <div class="shimmer h-full w-full"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ④ 結果 ============ -->
+  <section id="view-result" class="mx-auto hidden max-w-6xl px-5 py-12 sm:py-16">
+
+    <!-- レポートヘッダー -->
+    <div class="glass relative overflow-hidden rounded-3xl p-7 shadow-lift sm:p-10">
+      <div class="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-gold-500/15 blur-3xl"></div>
+      <div class="relative">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="inline-flex items-center gap-2 rounded-full border border-gold-500/40 bg-gold-500/10 px-3.5 py-1.5 text-[10px] tracking-[.2em] text-gold-300">
+            <span class="h-1.5 w-1.5 rounded-full bg-mint-400"></span> AI CAREER ANALYST REPORT
+          </span>
+          <span class="text-[10px] tracking-[.2em] text-slate-500">GENERATED BY <span id="r-model">CLAUDE</span></span>
+        </div>
+        <p class="mt-6 text-[11px] tracking-[.26em] text-slate-500">YOUR CAREER ARCHETYPE</p>
+        <h2 id="r-archetype" class="font-jp-serif mt-2 text-[1.9rem] font-bold leading-tight sm:text-[2.6rem]"></h2>
+        <p id="r-tagline" class="mt-4 max-w-2xl text-sm leading-relaxed text-slate-400 sm:text-[15px]"></p>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-3">
+          <div class="rounded-2xl border border-white/10 bg-ink-800/60 p-5">
+            <p class="text-[10px] tracking-[.2em] text-slate-500">総合キャリアスコア</p>
+            <p class="mt-1 font-sans text-4xl font-bold text-gold-300"><span id="r-score">0</span><span class="text-lg text-slate-500">/100</span></p>
+            <div class="meter mt-3"><i id="r-score-bar" style="background:linear-gradient(90deg,#C9A24B,#F2E2B4)"></i></div>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-ink-800/60 p-5">
+            <p class="text-[10px] tracking-[.2em] text-slate-500">伸びしろ（ポテンシャル）</p>
+            <p class="mt-1 font-sans text-4xl font-bold text-iris-400">+<span id="r-gain">0</span></p>
+            <div class="meter mt-3"><i id="r-gain-bar" style="background:linear-gradient(90deg,#5D4BD4,#9C8CF7)"></i></div>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-ink-800/60 p-5">
+            <p class="text-[10px] tracking-[.2em] text-slate-500">市場需要インデックス</p>
+            <p class="mt-1 font-sans text-4xl font-bold text-mint-400"><span id="r-demand">0</span></p>
+            <div class="meter mt-3"><i id="r-demand-bar" style="background:linear-gradient(90deg,#34BFA3,#5FD8BE)"></i></div>
+          </div>
+        </div>
+
+        <div id="r-badges" class="mt-7 flex flex-wrap gap-2"></div>
+      </div>
+    </div>
+
+    <!-- AIコメント + レーダー -->
+    <div class="mt-6 grid gap-6 lg:grid-cols-5">
+      <div class="glass rounded-3xl p-7 lg:col-span-3">
+        <div class="flex items-center gap-3">
+          <div class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-iris-500 to-iris-600 text-xs font-bold">AI</div>
+          <div>
+            <p class="text-sm font-semibold text-slate-100">AIキャリアアナリストの所見</p>
+            <p class="text-[10px] tracking-[.16em] text-slate-500">PERSONALIZED ANALYSIS</p>
+          </div>
+        </div>
+        <div class="rule-gold my-6"></div>
+        <div id="r-analysis" class="space-y-5 text-[14px] leading-[1.9] text-slate-300"></div>
+      </div>
+
+      <div class="glass rounded-3xl p-7 lg:col-span-2">
+        <p class="text-[11px] tracking-[.24em] text-slate-500">CAPABILITY MAP</p>
+        <p class="font-jp-serif mt-2 text-lg font-bold">6軸スキル評価</p>
+        <div class="mt-4">
+          <svg id="r-radar" viewBox="0 0 320 300" class="w-full" role="img" aria-label="6軸のスキル評価チャート"></svg>
+        </div>
+        <div class="mt-4 flex items-center justify-center gap-5 text-[11px] text-slate-400">
+          <span class="flex items-center gap-1.5"><i class="h-2 w-2 rounded-sm bg-slate-500"></i>現在</span>
+          <span class="flex items-center gap-1.5"><i class="h-2 w-2 rounded-sm bg-gold-400"></i>プラン完了後</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 診断インプット（回答サマリー） -->
+    <div class="glass mt-6 rounded-3xl p-7 sm:p-8">
+      <div class="flex flex-wrap items-end justify-between gap-5">
+        <div>
+          <p class="text-[11px] tracking-[.24em] text-slate-500">INPUT PROFILE</p>
+          <p class="font-jp-serif mt-2 text-lg font-bold">この診断が前提にした、あなたの回答</p>
+        </div>
+        <div class="w-full sm:w-64">
+          <div class="mb-2 flex items-end justify-between text-[12px]">
+            <span class="text-slate-400">価値観と方向性の適合度</span>
+            <span class="font-sans text-lg font-semibold text-gold-300"><span id="r-fit">0</span>%</span>
+          </div>
+          <div class="meter"><i id="r-fit-bar" style="background:linear-gradient(90deg,#A67F32,#F2E2B4)"></i></div>
+        </div>
+      </div>
+
+      <dl id="r-profile" class="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2"></dl>
+
+      <p id="r-fit-note" class="mt-7 rounded-xl border border-white/10 bg-ink-800/60 p-4 text-[13px] leading-relaxed text-slate-400"></p>
+    </div>
+
+    <!-- ロードマップ -->
+    <div class="mt-14">
+      <p class="text-[11px] tracking-[.26em] text-slate-500">RECOMMENDED ROADMAP</p>
+      <h3 class="font-jp-serif mt-2 text-2xl font-bold sm:text-3xl">推奨キャリアパス</h3>
+      <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-500">
+        3つのフェーズと、その中で並行して進める学習工程に分解しました。上から順にこなすのではなく、
+        重なっている期間は同時に走らせる想定です。
+      </p>
+
+      <div id="r-roadmap" class="mt-8 grid gap-5 md:grid-cols-3"></div>
+
+      <!-- ガントチャート -->
+      <div class="glass mt-6 rounded-3xl p-6 sm:p-8">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p class="text-[11px] tracking-[.24em] text-slate-500">LEARNING SCHEDULE</p>
+            <p class="font-jp-serif mt-2 text-lg font-bold">12ヶ月の学習工程表</p>
+          </div>
+          <div id="r-legend" class="flex flex-wrap gap-x-4 gap-y-2 text-[11px] text-slate-400"></div>
+        </div>
+
+        <div class="mt-7 overflow-x-auto pb-2">
+          <div id="r-gantt" class="min-w-[780px]"></div>
+        </div>
+
+        <p id="r-pace" class="mt-6 rounded-xl border border-iris-500/25 bg-iris-500/[.08] p-4 text-[13px] leading-relaxed text-slate-300"></p>
+      </div>
+    </div>
+
+    <!-- 学習テーマ詳細 -->
+    <div class="mt-16">
+      <p class="text-[11px] tracking-[.26em] text-slate-500">WHAT TO LEARN</p>
+      <h3 class="font-jp-serif mt-2 text-2xl font-bold sm:text-3xl">重点的に取り組む<span class="text-gold-300">学習テーマ</span></h3>
+      <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-500">
+        工程表の各トラックを「なぜ必要か」「何を学ぶか」「どこまで到達したら次に進めるか」に分解しています。
+      </p>
+      <div id="r-themes" class="mt-8 grid gap-6 lg:grid-cols-2"></div>
+    </div>
+
+    <!-- ROI -->
+    <div class="mt-16 glass rounded-3xl p-7 sm:p-10">
+      <p class="text-[11px] tracking-[.26em] text-slate-500">EXPECTED RETURN</p>
+      <h3 class="font-jp-serif mt-2 text-2xl font-bold sm:text-3xl">想定効果シミュレーション</h3>
+
+      <div class="mt-9 grid gap-10 lg:grid-cols-2">
+        <div>
+          <p class="text-sm font-medium text-slate-300">年収レンジの変化（想定）</p>
+          <div class="mt-6 space-y-6">
+            <div>
+              <div class="mb-2 flex items-end justify-between text-sm">
+                <span id="roi-now-label" class="text-slate-400">現在の想定レンジ</span>
+                <span class="font-sans text-lg font-semibold text-slate-300"><span id="roi-now">–</span></span>
+              </div>
+              <div class="meter h-2.5"><i id="roi-now-bar" style="background:linear-gradient(90deg,#3B4467,#5C6790)"></i></div>
+            </div>
+            <div>
+              <div class="mb-2 flex items-end justify-between text-sm">
+                <span class="text-gold-300">プラン完了 1年後</span>
+                <span class="font-sans text-lg font-semibold text-gold-300"><span id="roi-y1">–</span></span>
+              </div>
+              <div class="meter h-2.5"><i id="roi-y1-bar" style="background:linear-gradient(90deg,#A67F32,#E3C87F)"></i></div>
+            </div>
+            <div>
+              <div class="mb-2 flex items-end justify-between text-sm">
+                <span class="text-mint-400">3年後（継続学習ケース）</span>
+                <span class="font-sans text-lg font-semibold text-mint-400"><span id="roi-y3">–</span></span>
+              </div>
+              <div class="meter h-2.5"><i id="roi-y3-bar" style="background:linear-gradient(90deg,#1F7A67,#5FD8BE)"></i></div>
+            </div>
+          </div>
+          <p class="mt-6 rounded-xl border border-white/10 bg-ink-800/60 p-4 text-[13px] leading-relaxed text-slate-400">
+            <span class="font-semibold text-gold-300">投資回収の目安：</span>
+            <span id="roi-payback">–</span>
+          </p>
+        </div>
+
+        <div>
+          <p class="text-sm font-medium text-slate-300">市場ポジション指標</p>
+          <div id="roi-metrics" class="mt-6 grid gap-4 sm:grid-cols-2"></div>
+        </div>
+      </div>
+
+      <p class="mt-9 text-[11px] leading-relaxed text-slate-600">
+        ※ 表示される数値は本デモ用に設定されたサンプル値であり、実際の収入や転職結果を保証するものではありません。
+      </p>
+    </div>
+
+    <!-- CTA -->
+    <div class="no-print mt-16 overflow-hidden rounded-3xl border border-gold-500/25 bg-gradient-to-br from-gold-500/12 via-iris-600/10 to-transparent p-8 text-center sm:p-14">
+      <h3 class="font-jp-serif text-2xl font-bold leading-snug sm:text-3xl">
+        この工程を、<span class="gold-text">最初の1ヶ月</span>から。
+      </h3>
+      <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-slate-400">
+        12ヶ月分をまとめて抱えると必ず止まります。工程表の左端 ―― 最初の1ヶ月だけを切り出して着手してください。<br class="hidden sm:inline">
+        別の方向性を選んだ場合のプランも、その場で比較できます。
+      </p>
+
+      <div class="mt-10 flex flex-col items-center gap-5">
+        <div class="flex w-full max-w-2xl flex-col justify-center gap-4 sm:flex-row">
+          <button id="btn-register-cta"
+            class="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-gold-400 to-gold-600 px-10 py-5 text-[16px] font-bold text-ink-900 shadow-glow transition hover:-translate-y-1 hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold-300">
+            <span class="relative flex items-center justify-center gap-2">
+              <span class="cta-label">無料会員登録をする</span>
+              <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
+            </span>
+          </button>
+          <button id="btn-retry"
+            class="group rounded-2xl border border-white/15 bg-white/[.04] px-8 py-5 text-[15px] font-semibold text-slate-200 transition hover:-translate-y-1 hover:border-gold-500/40 hover:bg-white/[.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold-300">
+            <span class="flex items-center justify-center gap-2.5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                   stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 transition-transform duration-500 group-hover:-rotate-180" aria-hidden="true">
+                <path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>
+              </svg>
+              もう一度診断する
+            </span>
+          </button>
+        </div>
+        <p id="cta-microcopy" class="max-w-md text-center text-xs leading-relaxed text-slate-400">
+          登録すると、この診断結果に連動した<strong class="text-gold-300">あなた専用の学習ロードマップ（ガントチャート）と教材</strong>が閲覧でき、学習の進捗も保存できます。
+        </p>
+        <p class="text-xs text-slate-500">「もう一度診断する」で回答をやり直して、別の方向性のプランと比べることもできます。</p>
+
+        <button id="btn-print" class="mt-2 rounded-xl px-6 py-2.5 text-[13px] text-slate-400 underline decoration-slate-600 decoration-dotted underline-offset-4 transition hover:text-slate-200">
+          レポートを保存 / 印刷する
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ⑤ 会員マイページ ============ -->
+  <section id="view-member" class="mx-auto hidden max-w-6xl px-5 py-12 sm:py-16">
+
+    <!-- 診断結果が未保存の場合の空状態 -->
+    <div id="m-empty" class="glass hidden rounded-3xl p-10 text-center sm:p-14">
+      <p class="text-[11px] tracking-[.26em] text-slate-500">MY LEARNING DASHBOARD</p>
+      <h2 class="font-jp-serif mt-3 text-2xl font-bold">まずは診断で、<span class="gold-text">あなた専用のプラン</span>を作りましょう</h2>
+      <p class="mx-auto mt-4 max-w-md text-sm leading-relaxed text-slate-400">
+        診断が完了すると、結果に連動した学習ガントチャートと教材がここに表示され、進捗を保存できるようになります。
+      </p>
+      <button id="m-start-diagnosis"
+        class="mt-8 rounded-2xl bg-gradient-to-r from-gold-400 to-gold-600 px-8 py-4 text-[15px] font-bold text-ink-900 shadow-glow transition hover:-translate-y-0.5 hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold-300">
+        無料で診断をはじめる →
+      </button>
+    </div>
+
+    <!-- 診断結果が保存済みの場合の本体 -->
+    <div id="m-body" class="hidden">
+      <div class="glass relative overflow-hidden rounded-3xl p-7 shadow-lift sm:p-9">
+        <div class="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-iris-500/15 blur-3xl"></div>
+        <div class="relative flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p class="text-[11px] tracking-[.26em] text-slate-500">MY LEARNING DASHBOARD</p>
+            <h2 class="font-jp-serif mt-2 text-xl font-bold sm:text-2xl"><span id="m-username"></span> さんの学習プラン</h2>
+            <p class="mt-2 text-sm text-slate-400">
+              目標：<span id="m-archetype" class="font-semibold text-gold-300"></span>
+              <span class="ml-3 text-xs text-slate-500">診断日：<span id="m-date"></span></span>
+            </p>
+          </div>
+          <div class="w-full sm:w-72">
+            <div class="mb-2 flex items-end justify-between text-[12px]">
+              <span class="text-slate-400">全体の進捗</span>
+              <span class="font-sans text-2xl font-semibold text-gold-300"><span id="m-progress-pct">0</span><span class="text-sm text-slate-500">%</span></span>
+            </div>
+            <div class="meter"><i id="m-progress-bar" style="background:linear-gradient(90deg,#A67F32,#F2E2B4)"></i></div>
+            <p id="m-progress-text" class="mt-2 text-[11px] text-slate-500"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass mt-6 rounded-3xl p-6 sm:p-8">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p class="text-[11px] tracking-[.24em] text-slate-500">LEARNING SCHEDULE</p>
+            <p class="font-jp-serif mt-2 text-lg font-bold">学習スケジュール</p>
+            <p class="mt-2 text-[12px] leading-relaxed text-slate-500">
+              各タスクのバーには到達目標を表示しています。バーをクリックすると対応する教材が開き、進捗（未着手 / 進行中 / 完了）を更新できます（自動保存）。
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-x-4 gap-y-2 text-[11px] text-slate-400">
+            <span>○ 未着手</span>
+            <span class="text-mint-400">◐ 進行中</span>
+            <span class="text-gold-300">✓ 完了</span>
+          </div>
+        </div>
+
+        <div class="mt-6 overflow-x-auto pb-2">
+          <div id="m-gantt" class="min-w-[820px]"></div>
+        </div>
+
+        <p id="m-pace" class="mt-6 rounded-xl border border-iris-500/25 bg-iris-500/[.08] p-4 text-[13px] leading-relaxed text-slate-300"></p>
+      </div>
+
+      <div class="mt-8 flex flex-wrap items-center gap-4">
+        <button id="m-rediagnose"
+          class="rounded-xl border border-white/15 bg-white/[.04] px-5 py-2.5 text-[13px] text-slate-300 transition hover:border-gold-500/40 hover:bg-white/[.08]">
+          もう一度診断してプランを作り直す
+        </button>
+        <p class="text-[11px] text-slate-600">※ 再診断すると、新しい結果がマイページに上書き保存されます（進捗は方向性ごとに保持されます）。</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="mt-20 border-t border-white/5 py-10">
+    <div class="mx-auto max-w-6xl px-5 text-[11px] leading-relaxed text-slate-600">
+      <p class="tracking-[.2em] text-slate-500">CAREER COMPASS — DEMO PROTOTYPE</p>
+      <p class="mt-2">スコア・年収レンジ・市場指標はすべてデモ用のサンプル値です。提案・デモ用途を想定したフロントエンド実装です。</p>
+    </div>
+  </footer>
+</div>
+
+<!-- ============ 認証モーダル（デモ用の疑似認証） ============ -->
+<div id="auth-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="auth-title">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-panel glass max-w-md rounded-3xl p-7 shadow-lift sm:p-8" tabindex="-1">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <p class="text-[11px] tracking-[.26em] text-gold-300">MEMBERS</p>
+        <h2 id="auth-title" class="font-jp-serif mt-2 text-xl font-bold">会員ログイン / 無料会員登録</h2>
+      </div>
+      <button type="button" data-close aria-label="閉じる"
+        class="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-slate-400 transition hover:bg-white/10 hover:text-slate-100">✕</button>
+    </div>
+
+    <div class="mt-6 grid grid-cols-2 gap-2">
+      <button type="button" id="tab-login" class="tab-btn" aria-selected="true">ログイン</button>
+      <button type="button" id="tab-register" class="tab-btn" aria-selected="false">無料会員登録</button>
+    </div>
+
+    <p class="mt-4 rounded-xl border border-orange-400/35 bg-orange-400/10 p-3.5 text-[12.5px] leading-relaxed text-orange-300">
+      🧪 <strong>テストユーザーでお試しいただけます</strong><br>
+      メールアドレス：<strong class="font-sans">test@example.com</strong><br>
+      パスワード：<strong class="font-sans">test1234</strong><br>
+      <span class="text-orange-300/85">このアカウントでログインすると、見本の学習スケジュール（AI駆動開発）が表示されます。</span>
+    </p>
+
+    <p id="auth-error" class="mt-4 hidden rounded-xl border border-rose-400/30 bg-rose-400/10 p-3 text-[13px] text-rose-200" role="alert" aria-live="polite"></p>
+
+    <form id="form-login" class="mt-5 space-y-4">
+      <label class="block">
+        <span class="mb-1.5 block text-[12px] text-slate-400">メールアドレス</span>
+        <input id="login-email" type="email" required autocomplete="email" class="field" placeholder="you@example.com">
+      </label>
+      <label class="block">
+        <span class="mb-1.5 block text-[12px] text-slate-400">パスワード</span>
+        <input id="login-pass" type="password" required minlength="4" autocomplete="current-password" class="field" placeholder="••••••••">
+      </label>
+      <button type="submit"
+        class="w-full rounded-2xl bg-gradient-to-r from-gold-400 to-gold-600 px-6 py-3.5 text-[15px] font-bold text-ink-900 transition hover:-translate-y-0.5 hover:shadow-glow">
+        ログインする
+      </button>
+    </form>
+
+    <form id="form-register" class="mt-5 hidden space-y-4">
+      <label class="block">
+        <span class="mb-1.5 block text-[12px] text-slate-400">お名前（ニックネーム可）</span>
+        <input id="reg-name" type="text" required maxlength="30" autocomplete="nickname" class="field" placeholder="コンパス 太郎">
+      </label>
+      <label class="block">
+        <span class="mb-1.5 block text-[12px] text-slate-400">メールアドレス</span>
+        <input id="reg-email" type="email" required autocomplete="email" class="field" placeholder="you@example.com">
+      </label>
+      <label class="block">
+        <span class="mb-1.5 block text-[12px] text-slate-400">パスワード（4文字以上）</span>
+        <input id="reg-pass" type="password" required minlength="4" autocomplete="new-password" class="field" placeholder="••••••••">
+      </label>
+      <button type="submit"
+        class="w-full rounded-2xl bg-gradient-to-r from-gold-400 to-gold-600 px-6 py-3.5 text-[15px] font-bold text-ink-900 transition hover:-translate-y-0.5 hover:shadow-glow">
+        無料で登録する
+      </button>
+      <p class="text-[12px] leading-relaxed text-slate-400">
+        登録すると、診断結果に連動した<strong class="text-gold-300">あなた専用の学習ガントチャートと教材</strong>が利用でき、学習の進捗を保存できます。
+      </p>
+    </form>
+
+    <p class="mt-6 border-t border-white/10 pt-4 text-[11px] leading-relaxed text-slate-600">
+      ※ 本機能はデモ用の疑似認証です。入力内容はこのブラウザの LocalStorage にのみ保存され、サーバーには送信されません。実在のパスワード等は入力しないでください。
+    </p>
+  </div>
+</div>
+
+<!-- ============ 教材モーダル ============ -->
+<div id="material-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mat-title">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-panel glass max-w-xl rounded-3xl p-7 shadow-lift sm:p-8" tabindex="-1">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <p class="text-[11px] tracking-[.26em] text-gold-300">LEARNING MATERIAL</p>
+        <p id="mat-track" class="mt-3 text-[12px] text-slate-500"></p>
+        <h2 id="mat-title" class="font-jp-serif mt-1 text-xl font-bold leading-snug"></h2>
+      </div>
+      <button type="button" data-close aria-label="閉じる"
+        class="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-slate-400 transition hover:bg-white/10 hover:text-slate-100">✕</button>
+    </div>
+
+    <div class="mt-4 flex flex-wrap gap-2 text-[11px]">
+      <span class="rounded-lg border border-white/10 bg-white/[.04] px-2.5 py-1 text-slate-300">📅 <span id="mat-period"></span></span>
+      <span class="rounded-lg border border-white/10 bg-white/[.04] px-2.5 py-1 text-slate-300">⏱ <span id="mat-note"></span></span>
+      <span class="rounded-lg border border-white/10 bg-white/[.04] px-2.5 py-1 text-slate-300">🏷 <span id="mat-tone"></span></span>
+    </div>
+
+    <p id="mat-goal" class="mt-5 rounded-xl border border-mint-400/25 bg-mint-500/[.08] p-4 text-[13px] leading-relaxed text-slate-300"></p>
+
+    <div id="mat-theme" class="mt-4 rounded-xl border border-white/10 bg-ink-800/60 p-4">
+      <p class="text-[10px] tracking-[.18em] text-slate-500">関連する学習テーマ（この教材で扱う内容）</p>
+      <p id="mat-theme-title" class="mt-1.5 text-[13px] font-semibold text-slate-200"></p>
+      <ul id="mat-theme-items" class="mt-2.5 space-y-1.5"></ul>
+    </div>
+
+    <!-- 教材コンテンツ枠（現時点では Coming Soon） -->
+    <div class="mt-6 grid place-items-center rounded-2xl border border-dashed border-white/15 bg-ink-800/60 px-6 py-14 text-center">
+      <p class="gold-text font-sans text-2xl font-bold tracking-[.3em]">COMING SOON</p>
+      <p class="mt-3 text-[13px] leading-relaxed text-slate-500">この教材コンテンツは現在準備中です。<br>公開までしばらくお待ちください。</p>
+    </div>
+
+    <div class="mt-6">
+      <p class="text-[10px] tracking-[.18em] text-slate-500">学習ステータス（クリックで更新・自動保存）</p>
+      <div id="mat-status" class="mt-3 flex flex-wrap gap-2"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* =========================================================
+     1. 質問データ
+     ========================================================= */
+  const QUESTIONS = [
+    {
+      id: 'industry', type: 'single', cat: 'CURRENT POSITION',
+      title: 'いま、あなたはどんなフィールドで働いていますか？',
+      hint: 'これまでの経験は、次のキャリアの土台になります。もっとも近いものを選んでください。',
+      options: [
+        { v:'sales',   icon:'🤝', label:'営業・販売・接客',     desc:'対人折衝と数値責任の経験' },
+        { v:'it',      icon:'⌘',  label:'IT・エンジニア',       desc:'技術職・情報システム系' },
+        { v:'admin',   icon:'📁', label:'事務・管理・バックオフィス', desc:'経理・人事・総務・企画' },
+        { v:'medical', icon:'🩺', label:'医療・福祉・保育',     desc:'専門資格を活かす対人支援職' },
+        { v:'public',  icon:'🏛', label:'教育・公務・インフラ',  desc:'安定基盤のある組織で勤務' },
+        { v:'other',   icon:'✳️', label:'その他 / 現在は求職中',  desc:'製造・物流・飲食・離職中など' },
+      ],
+    },
+    {
+      id: 'salary', type: 'single', cat: 'CURRENT INCOME',
+      title: '現在の年収は、どのあたりですか？',
+      hint: '想定効果シミュレーションの起点になります。賞与を含む額面（税引前）でお答えください。',
+      options: [
+        { v:'lt300',     icon:'💴', label:'300万円未満',      desc:'まずは生活の土台を上げたい' },
+        { v:'300to400',  icon:'💰', label:'300〜400万円',     desc:'平均に近いが伸び幅が欲しい' },
+        { v:'400to500',  icon:'💵', label:'400〜500万円',     desc:'現職の給与テーブルの中位' },
+        { v:'500to700',  icon:'💳', label:'500〜700万円',     desc:'次の一段が見えづらい層' },
+        { v:'700to1000', icon:'🏦', label:'700〜1000万円',    desc:'役割の質を変える段階' },
+        { v:'gt1000',    icon:'💎', label:'1000万円以上',     desc:'替えのきかない領域を作る段階' },
+        { v:'none',      icon:'🔎', label:'収入なし / 答えたくない', desc:'業界平均を起点に試算します' },
+      ],
+    },
+    {
+      id: 'strengths', type: 'multi', cat: 'SKILL ASSETS',
+      title: 'いま、比較的得意な領域はどれですか？',
+      hint: '複数選択できます。実務レベルでなくても「人より苦にならない」ものを選んでください。',
+      options: [
+        { v:'logic',     icon:'🧮', label:'論理・分析',        desc:'筋道を立てて構造化できる' },
+        { v:'comm',      icon:'🗣', label:'対人・折衝',        desc:'折衝して合意をつくれる' },
+        { v:'writing',   icon:'✍️', label:'文章・言語化',      desc:'考えを言葉に落とせる' },
+        { v:'design',    icon:'🎨', label:'デザイン・審美',    desc:'見せ方と体験を整えられる' },
+        { v:'tech',      icon:'⌨️', label:'ITツール・技術',    desc:'新しいツールに強い' },
+        { v:'numbers',   icon:'📊', label:'数字・計数管理',    desc:'数値で状況を捉えられる' },
+        { v:'ops',       icon:'🧰', label:'業務設計・段取り',  desc:'仕組みと手順を整えられる' },
+        { v:'lead',      icon:'🧭', label:'育成・チーム運営',  desc:'人に任せて伸ばせる' },
+        { v:'selflearn', icon:'📚', label:'独学・キャッチアップ', desc:'調べて自力で進められる' },
+        { v:'language',  icon:'🌐', label:'語学',              desc:'英語などで読み書きできる' },
+        { v:'idea',      icon:'💡', label:'企画・発想',        desc:'新しい案を出せる' },
+        { v:'detail',    icon:'🔍', label:'正確性・緻密さ',    desc:'抜け漏れに気づける' },
+      ],
+    },
+    {
+      id: 'issues', type: 'multi', cat: 'PAIN POINTS',
+      title: 'いま抱えている課題はどれですか？',
+      hint: '強く感じているものを選んでください。数に制限はありません。',
+      options: [
+        { v:'income',     icon:'📈', label:'年収を上げたい',           desc:'現職の給与テーブルに限界を感じる' },
+        { v:'remote',     icon:'🌐', label:'リモートで働きたい',       desc:'場所に縛られない働き方が理想' },
+        { v:'future',     icon:'⏳', label:'この仕事の将来性が不安',   desc:'10年後も必要とされるか分からない' },
+        { v:'skill',      icon:'🎯', label:'専門性を身につけたい',     desc:'“何でも屋”から抜け出したい' },
+        { v:'control',    icon:'🕹', label:'裁量のある仕事がしたい',   desc:'自分で決めて動かしたい' },
+        { v:'time',       icon:'🌿', label:'時間の自由が欲しい',       desc:'働く時間を自分で設計したい' },
+        { v:'evaluation', icon:'⚖️', label:'正当に評価されていない',   desc:'成果と評価が結びついていない' },
+        { v:'growth',     icon:'📉', label:'成長が止まっている',       desc:'去年と同じことを繰り返している' },
+        { v:'undecided',  icon:'🧩', label:'やりたいことが分からない', desc:'方向性そのものを決められない' },
+        { v:'company',    icon:'🏚', label:'会社・業界の先行きが不安', desc:'この組織に居続けるリスクを感じる' },
+        { v:'overwork',   icon:'🌙', label:'労働時間・負荷を減らしたい', desc:'このペースでは続かない' },
+        { v:'people',     icon:'🧊', label:'人間関係・社風が合わない', desc:'環境そのものを変えたい' },
+        { v:'side',       icon:'🪴', label:'副業で収入の柱を増やしたい', desc:'収入源が1つしかないのが不安' },
+        { v:'change',     icon:'🔀', label:'未経験の分野へ転向したい', desc:'今の延長線上ではない道に進みたい' },
+        { v:'family',     icon:'🏡', label:'家庭・育児と両立させたい', desc:'生活を犠牲にしない働き方が必要' },
+      ],
+    },
+    {
+      id: 'values', type: 'multi', cat: 'CORE VALUES',
+      title: '仕事において、大切にしたいことは？',
+      hint: '複数選択できます。次の設問で選ぶ方向性との「適合度」を、ここから算出します。',
+      options: [
+        { v:'income',    icon:'💹', label:'収入を最大化したい',   desc:'成果が報酬に直結する形' },
+        { v:'autonomy',  icon:'🕹', label:'裁量と自由を持ちたい', desc:'進め方を自分で決めたい' },
+        { v:'stability', icon:'🛡', label:'安定して長く働きたい', desc:'波の小さい環境を選びたい' },
+        { v:'growth',    icon:'📈', label:'成長し続けたい',       desc:'常に新しいことを学びたい' },
+        { v:'expertise', icon:'🔬', label:'専門性を極めたい',     desc:'一点を深く掘りたい' },
+        { v:'impact',    icon:'🌏', label:'社会的な意義が欲しい', desc:'誰かの役に立つ実感が要る' },
+        { v:'influence', icon:'🎖', label:'影響力を持ちたい',     desc:'大きな判断に関わりたい' },
+        { v:'balance',   icon:'🏡', label:'生活との調和',         desc:'仕事以外の時間を守りたい' },
+        { v:'creative',  icon:'🖌', label:'つくることが喜び',     desc:'表現・創造が手応えになる' },
+        { v:'team',      icon:'🤝', label:'仲間と成し遂げたい',   desc:'仲間がいると力が出る' },
+      ],
+    },
+    {
+      id: 'direction', type: 'single', cat: 'DESTINATION',
+      title: '目指したい方向性に、もっとも近いのは？',
+      hint: 'ここが学習プランの背骨になります。迷う場合は、いま一番惹かれるものを選んでください。',
+      options: [
+        { v:'ai_dx',        icon:'🧠', label:'AI・DX人材',           desc:'生成AIとデータで事業を変える' },
+        { v:'management',   icon:'🧭', label:'マネジメント',         desc:'人と組織を動かす立場へ' },
+        { v:'specialist',   icon:'🔬', label:'専門スペシャリスト',   desc:'一点を深く掘り、替えのきかない人へ' },
+        { v:'product',      icon:'🧱', label:'プロダクト企画・PdM',  desc:'“何を作るか”を決める側に回る' },
+        { v:'marketing',    icon:'📣', label:'マーケティング・グロース', desc:'数字で売上をつくる' },
+        { v:'creative',     icon:'🎨', label:'デザイン・クリエイティブ', desc:'課題を視覚と体験で解く' },
+        { v:'global',       icon:'✈️', label:'グローバル人材',       desc:'英語と越境で市場を広げる' },
+        { v:'freelance',    icon:'🚀', label:'フリーランス独立',     desc:'自分の名前で仕事を受ける' },
+        { v:'entrepreneur', icon:'🌱', label:'起業・事業オーナー',   desc:'自分が動かなくても回る仕組みをつくる' },
+        { v:'stable',       icon:'🛡', label:'安定・長く働ける専門職', desc:'10年20年続けられる土台を固める' },
+      ],
+    },
+    {
+      id: 'constraints', type: 'multi', cat: 'CONSTRAINTS',
+      // 「特に制約はない」は他の選択と両立しないため排他扱いにする（select() が参照する）
+      exclusive: 'none',
+      title: '避けたい条件・受け入れられないことは？',
+      hint: '複数選択できます。プランはこの制約の内側で組み立てます。当てはまらない場合は「特に制約はない」を選んでください。',
+      options: [
+        { v:'paycut',   icon:'📉', label:'一時的な年収ダウン',   desc:'収入は落とせない' },
+        { v:'unstable', icon:'🎲', label:'収入が不安定になる', desc:'固定収入は確保したい' },
+        { v:'overtime', icon:'🌙', label:'長時間労働・休日対応', desc:'稼働はもう増やせない' },
+        { v:'relocate', icon:'🧳', label:'転居・遠方への通勤',   desc:'生活拠点は動かせない' },
+        { v:'shift',    icon:'⏰', label:'夜勤・不規則シフト',   desc:'生活リズムは崩せない' },
+        { v:'quota',    icon:'🎯', label:'ノルマ・強い数値目標', desc:'数字に追われたくない' },
+        { v:'solo',     icon:'🏝', label:'孤立した一人作業',     desc:'相談できる相手が必要' },
+        { v:'longterm', icon:'⌛️', label:'1年以上かかる学習',    desc:'短期で成果を出したい' },
+        { v:'restart',  icon:'🔙', label:'未経験からのやり直し', desc:'経験を活かしたい' },
+        { v:'none',     icon:'🟢', label:'特に制約はない',       desc:'条件は柔軟に検討できる' },
+      ],
+    },
+    {
+      id: 'hours', type: 'single', cat: 'TIME BUDGET',
+      title: '毎週、学習に確保できる時間はどのくらい？',
+      hint: '無理のない計画のために、現実的な時間を選んでください。',
+      options: [
+        { v:'lt3',  icon:'🕐', label:'〜3時間',       desc:'すきま時間中心で進めたい' },
+        { v:'3to5', icon:'🕑', label:'3〜5時間',      desc:'平日夜に少しずつ' },
+        { v:'5to10',icon:'🕓', label:'5〜10時間',     desc:'平日＋週末で計画的に' },
+        { v:'gt15', icon:'🕛', label:'15時間以上',    desc:'短期集中で一気に仕上げたい' },
+      ],
+    },
+    {
+      id: 'budget', type: 'single', cat: 'INVESTMENT',
+      title: '予算感と学習期間のイメージは？',
+      hint: '給付制度や分割を前提に、方針として選んでください。',
+      options: [
+        { v:'sprint', icon:'⚡️', label:'3ヶ月集中・投資は厚めに', desc:'短期で結果を出したい' },
+        { v:'half',   icon:'🌗', label:'半年でじっくり・標準予算', desc:'仕事と両立しながら着実に' },
+        { v:'year',   icon:'🌳', label:'1年腰を据えて・長期投資',  desc:'土台から作り直したい' },
+        { v:'lean',   icon:'🪙', label:'低予算・最短ルート優先',   desc:'まずコストを抑えて始めたい' },
+      ],
+    },
+  ];
+
+  /* =========================================================
+     2. 工程表の凡例（トラック種別）
+     ========================================================= */
+  const TONE = {
+    core:       { bg:'linear-gradient(90deg,#A67F32,#F2E2B4)', fg:'#05070F', label:'基礎インプット' },
+    practice:   { bg:'linear-gradient(90deg,#5D4BD4,#9C8CF7)', fg:'#0A0820', label:'実践・演習' },
+    output:     { bg:'linear-gradient(90deg,#1F7A67,#5FD8BE)', fg:'#03120E', label:'アウトプット' },
+    transition: { bg:'linear-gradient(90deg,#9F1239,#FB923C)', fg:'#1A0407', label:'キャリア転換' },
+    habit:      { bg:'repeating-linear-gradient(45deg,rgba(255,255,255,.14) 0 6px,rgba(255,255,255,.05) 6px 12px)', fg:'#CBD5E1', label:'継続する習慣' },
+  };
+
+  /* 確保できる学習時間に応じた、工程全体のペース補正 */
+  const PACE = {
+    lt3:    '確保できる時間が週3時間未満のため、この工程は <strong class="text-gold-300">16〜18ヶ月</strong> に伸ばす前提で組んでください。同時に走らせるトラックは最大2本までに抑えるのが現実的です。',
+    '3to5': '週3〜5時間であれば、この <strong class="text-gold-300">12ヶ月の工程がほぼそのまま</strong> 当てはまります。同時に走らせるトラックは2〜3本までを目安にしてください。',
+    '5to10':'週5〜10時間確保できるため、この工程は <strong class="text-gold-300">9〜12ヶ月</strong> で走り切れます。実践フェーズを1〜2ヶ月前倒しできます。',
+    gt15:   '週15時間以上確保できるため、この工程は <strong class="text-gold-300">6〜8ヶ月</strong> に圧縮できます。基礎と実践を最初から並行させてください。',
+  };
+
+  /* =========================================================
+     3. アーキタイプ（方向性別プラン）
+     ========================================================= */
+  const ARCHETYPES = {
+    ai_dx: {
+      title:'AI駆動型 事業変革リーダー',
+      tagline:'現場の課題を知るあなたが生成AIとデータを扱えるようになると、社内で「置き換え不可能なポジション」が生まれます。技術者ではなく“変える人”としての希少性が武器になります。',
+      badges:['需要 急拡大','リモート適性 高','年収レンジ 上振れ'],
+      demand:94,
+      tracks:[
+        { name:'生成AIの仕組みと限界',       start:0, len:2,  tone:'core',       note:'週3〜4h' },
+        { name:'プロンプト設計と業務適用',   start:1, len:3,  tone:'core',       note:'週4h' },
+        { name:'Python による業務自動化',    start:2, len:4,  tone:'core',       note:'週4〜6h' },
+        { name:'SQL とデータ抽出',           start:4, len:3,  tone:'practice',   note:'週3h' },
+        { name:'指標設計とダッシュボード',   start:6, len:3,  tone:'practice',   note:'週3h' },
+        { name:'自部署の業務を実際に改善',   start:3, len:7,  tone:'practice',   note:'実務のなかで' },
+        { name:'改善効果の数値化・事例化',   start:7, len:4,  tone:'output',     note:'月1本' },
+        { name:'社内提案 / 職務経歴書の再構成', start:9, len:3, tone:'transition',note:'選考準備' },
+        { name:'週次アウトプットの継続',     start:0, len:12, tone:'habit',      note:'毎週ひとつ' },
+      ],
+      themes:[
+        {
+          title:'生成AIを「業務設計」の道具として扱う',
+          why:'ツールの操作を覚えるだけでは差がつきません。どの業務を、どこまでAIに任せられるかを判断できることが価値になります。',
+          items:['言語モデルの仕組みと、苦手な処理の把握','業務プロセスの分解とAI適用箇所の見極め','再現性のあるプロンプトの設計と検証','出力を検品する基準とチェック体制づくり'],
+          hours:'週3〜4時間 × 8週',
+          goal:'自部署の定型業務を1つ選び、AI活用の手順書として他の人に渡せる状態',
+        },
+        {
+          title:'Python で手作業そのものを消す',
+          why:'AIの出力を人が転記している限り、削減効果は頭打ちになります。前後の処理をつなぐコードが書けると、効果が一気に伸びます。',
+          items:['基本文法とファイル操作（CSV / Excel）','スプレッドシート・社内ツールのAPI連携','定期実行とエラー処理の作り込み','コードの共有と引き継ぎ（読める状態に保つ）'],
+          hours:'週4〜6時間 × 16週',
+          goal:'月に数時間かかっていた作業を1本のスクリプトに置き換え、削減時間を計測できている状態',
+        },
+        {
+          title:'データで意思決定を支える',
+          why:'「改善した気がする」で終わらせないために、効果を数字で示す力が必要です。ここが社内提案の通過率を左右します。',
+          items:['SQL による抽出・集計・結合','指標（KPI）の設計と、見るべき粒度の決定','ダッシュボードでの可視化と運用','数字を意思決定の言葉に翻訳する練習'],
+          hours:'週3時間 × 24週',
+          goal:'自分が作った数字をもとに、他の人の判断が1回以上変わった経験があること',
+        },
+        {
+          title:'成果を第三者が評価できる形に変える',
+          why:'経験そのものは十分でも、証明手段がなければ市場評価は上がりません。ここが今のあなたにとって最大のボトルネックです。',
+          items:['改善事例のビフォー / アフターを数値で記録','社内提案資料としてまとめ直す','職務経歴書へ「担当業務」ではなく「変えた結果」で記載','DX / AI活用ポジションの募集要件との突き合わせ'],
+          hours:'週2〜3時間 × 12週',
+          goal:'改善事例が3件、数字つきで説明できる状態（社内異動・転職の両方で使える）',
+        },
+      ],
+      gain:[2,3,2,2,1,2],
+      roadmap:[
+        { term:'0〜3ヶ月', head:'基礎の獲得', body:'生成AIの仕組みとプロンプト設計、Pythonでの自動化基礎を習得。自分の業務を1つ自動化し、効果を数値で出します。', kpis:['AI基礎 / プロンプト設計','Python 自動化スクリプト1本','業務削減時間の計測'] },
+        { term:'3〜6ヶ月', head:'実践演習', body:'社内データを使った分析とダッシュボード構築へ。実データで意思決定を支えた事例を2〜3件つくり、ポートフォリオ化します。', kpis:['SQL / BI ダッシュボード','AI活用の社内提案書','改善事例 2〜3件'] },
+        { term:'6ヶ月〜', head:'ポジション獲得', body:'DX推進・AI活用の担当としての社内異動、もしくはAI人材枠での転職。実績が数値で語れる状態が交渉力になります。', kpis:['職務経歴書の再設計','DX / AI求人への応募','年収レンジ交渉'] },
+      ],
+      roi:{ nowMul:1.0, y1:1.22, y3:1.48, payback:'年収が想定どおり上振れした場合、受講費の回収目安は 約7〜11ヶ月。' },
+      metrics:[
+        { label:'関連求人の伸び（前年比）', value:'+38%', bar:88, color:'#E3C87F' },
+        { label:'リモート可求人の割合',     value:'71%',  bar:71, color:'#5FD8BE' },
+        { label:'未経験可 求人の割合',       value:'34%',  bar:34, color:'#9C8CF7' },
+        { label:'想定 平均年収レンジ',       value:'620〜880万', bar:78, color:'#7C6BF0' },
+      ],
+    },
+    management: {
+      title:'越境型 マネジメント人材',
+      tagline:'プレイヤーとしての実績に「人と数字を動かす技術」を足すフェーズです。マネジメントは資質ではなく再現可能なスキルであり、体系的に学べば最短で市場価値に変わります。',
+      badges:['再現性 高','キャリア寿命 長','組織内昇進に直結'],
+      demand:82,
+      tracks:[
+        { name:'マネジメントの原則インプット', start:0, len:2,  tone:'core',       note:'週3h' },
+        { name:'1on1 の型づくりと実践',       start:1, len:5,  tone:'core',       note:'週2h＋実務' },
+        { name:'目標設計（OKR / KPI）',       start:2, len:4,  tone:'core',       note:'週3h' },
+        { name:'数値でチームを見る仕組み',     start:4, len:4,  tone:'practice',   note:'週3h' },
+        { name:'採用・育成への関与',           start:5, len:4,  tone:'practice',   note:'実務のなかで' },
+        { name:'部門横断プロジェクトの推進',   start:7, len:4,  tone:'practice',   note:'実務のなかで' },
+        { name:'評価・フィードバック設計',     start:8, len:3,  tone:'output',     note:'週2h' },
+        { name:'マネジメント実績の言語化',     start:9, len:3,  tone:'transition', note:'選考準備' },
+        { name:'週次の振り返りジャーナル',     start:0, len:12, tone:'habit',      note:'毎週15分' },
+      ],
+      themes:[
+        {
+          title:'人を動かす前に「合意」をつくる',
+          why:'マネジメントの失敗の大半は、指示の質ではなく前提のすり合わせ不足から起きます。まずここを型にします。',
+          items:['1on1 の目的設定と進め方のテンプレ化','期待値のすり合わせ（何を、どこまで、いつまでに）','傾聴と、事実と解釈を分ける聞き方','関係性が崩れたときの立て直し方'],
+          hours:'週2時間＋実務での実践 × 20週',
+          goal:'メンバー全員と定期1on1が回り、内容を記録・振り返りできている状態',
+        },
+        {
+          title:'目標を数字に翻訳する',
+          why:'「頑張る」を評価できる形にしないと、成果もあなたの貢献も証明できません。目標設計はマネジメントの中核スキルです。',
+          items:['OKR / KPI の設計と、上位目標との接続','個人目標への分解と納得感のつくり方','進捗の可視化と、遅れの早期検知','未達だったときの原因分析の型'],
+          hours:'週3時間 × 16週',
+          goal:'四半期の目標を自分で設計し、期末に達成度を根拠つきで説明できる状態',
+        },
+        {
+          title:'育成を仕組みに変える',
+          why:'自分が見ていないと成果が落ちる状態では、担当範囲を広げられません。再現性のある育成が次の等級の条件になります。',
+          items:['スキルマップと育成計画の作成','権限委譲の段階設計（任せ方の設計）','採用要件の定義と面接での見極め','フィードバックと評価の運用'],
+          hours:'週2〜3時間＋実務 × 20週',
+          goal:'自分が不在でも回る領域が生まれ、メンバーの成長を具体例で語れる状態',
+        },
+        {
+          title:'実績を語れる形に整える',
+          why:'管理職の選考では「何人を、どの指標で、どれだけ伸ばしたか」が問われます。記録がなければ後から作れません。',
+          items:['担当組織の規模・期間・指標の記録','施策と結果の因果を整理する','失敗事例と、そこから変えたことの言語化','管理職ポジションの募集要件との突き合わせ'],
+          hours:'週2時間 × 12週',
+          goal:'マネジメント経験を数字と具体例で3件説明できる状態',
+        },
+      ],
+      gain:[2,2,1,2,2,2],
+      roadmap:[
+        { term:'0〜3ヶ月', head:'基礎の獲得', body:'1on1と目標設計の型を学び、まずは小さなチームやプロジェクトで実践。メンバーの成果が動く手応えを掴みます。', kpis:['1on1 の型の習得','OKR / 目標設計','小規模チーム運営'] },
+        { term:'3〜6ヶ月', head:'実践演習', body:'数値でチームを見る力を追加。KPI設計とダッシュボードで、感覚ではなくデータでマネジメントする状態へ。', kpis:['KPI 設計と可視化','採用 / 育成への関与','部門横断プロジェクト'] },
+        { term:'6ヶ月〜', head:'ポジション獲得', body:'マネージャー・リーダー職での昇進または転職。「何人を、どの指標で、どれだけ伸ばしたか」が交渉材料になります。', kpis:['マネジメント実績の言語化','管理職ポジション応募','評価制度への提案'] },
+      ],
+      roi:{ nowMul:1.0, y1:1.18, y3:1.42, payback:'管理職手当・等級変更を含めた回収目安は 約9〜14ヶ月。' },
+      metrics:[
+        { label:'管理職求人の伸び（前年比）', value:'+16%', bar:62, color:'#E3C87F' },
+        { label:'社内昇進で到達する割合',     value:'58%',  bar:58, color:'#5FD8BE' },
+        { label:'マネジメント経験の必須率',   value:'82%',  bar:82, color:'#9C8CF7' },
+        { label:'想定 平均年収レンジ',         value:'700〜1000万', bar:85, color:'#7C6BF0' },
+      ],
+    },
+    freelance: {
+      title:'独立自走型 プロフェッショナル',
+      tagline:'雇用の外側で成立させるには、技術力と同じ比重で「受注できる仕組み」が必要です。スキル習得と並行して案件獲得の導線を作ることが、独立の成否を分けます。',
+      badges:['時間の裁量 最大','単価設計が鍵','初期は二軸運用推奨'],
+      demand:76,
+      tracks:[
+        { name:'提供領域の見極めと絞り込み',   start:0, len:2,  tone:'core',       note:'週3h' },
+        { name:'中核スキルを実務水準へ',       start:0, len:5,  tone:'core',       note:'週6〜8h' },
+        { name:'ポートフォリオ制作（3本）',    start:1, len:4,  tone:'practice',   note:'週5h' },
+        { name:'見積・契約・請求の実務知識',   start:3, len:2,  tone:'core',       note:'週2h' },
+        { name:'副業として実案件を受注',       start:4, len:6,  tone:'practice',   note:'月1〜2件' },
+        { name:'集客導線と紹介経路づくり',     start:6, len:5,  tone:'output',     note:'週3h' },
+        { name:'単価設計と価格改定',           start:7, len:3,  tone:'output',     note:'週2h' },
+        { name:'独立準備（税務・保険・契約）', start:9, len:3,  tone:'transition', note:'手続き' },
+        { name:'稼働と収支の記録',             start:2, len:10, tone:'habit',      note:'毎週集計' },
+      ],
+      themes:[
+        {
+          title:'まず「何屋か」を決める',
+          why:'独立で最初に折れるのは、技術力ではなく「誰の何を解決する人か」が曖昧なケースです。領域の確定を最優先にしてください。',
+          items:['これまでの経験で単価がつく領域の棚卸し','対象顧客と、解決する課題の言語化','競合となる個人事業者の調査と価格帯の把握','受けない仕事を決める（断る基準の明文化）'],
+          hours:'週3時間 × 8週',
+          goal:'「〇〇業界の△△を担当します」と一文で言い切れる状態',
+        },
+        {
+          title:'納品できる水準まで技術を上げる',
+          why:'学習用の課題と、対価を受け取る納品物の間には明確な差があります。品質基準を先に知ることが遠回りを防ぎます。',
+          items:['中核スキルの実務レベルの反復演習','納品物の品質基準（動作・保守性・ドキュメント）','制作フローとスケジュールの見積り精度','第三者レビューを受けて直すサイクル'],
+          hours:'週6〜8時間 × 20週',
+          goal:'実務相当のポートフォリオが3本あり、それぞれ制作意図を説明できる状態',
+        },
+        {
+          title:'受注の仕組みをつくる',
+          why:'スキルがあっても仕事が来なければ成立しません。技術学習と同じ比重で、受注経路の構築に時間を割いてください。',
+          items:['実績の見せ方（サイト・SNS・提案資料）','見積書・契約書・請求書の実務','初回相談から受注までの流れの設計','継続案件・紹介につなげる納品後の運用'],
+          hours:'週3時間 × 20週',
+          goal:'副業として有償案件を3〜5件こなし、そのうち1件がリピートしている状態',
+        },
+        {
+          title:'単価と稼働を自分で設計する',
+          why:'安い単価で埋めた稼働は、後から上げるのが難しくなります。独立前に価格を上げる練習をしておくことが重要です。',
+          items:['工数と収益の実績集計（時間単価の把握）','値上げの根拠づくりと伝え方','稼働上限と、受注量のコントロール','固定収益（保守・顧問）の割合を増やす設計'],
+          hours:'週2時間 × 12週',
+          goal:'月次の固定収益が生活費を上回り、時間単価を1回引き上げた実績があること',
+        },
+      ],
+      gain:[3,3,2,1,3,1],
+      roadmap:[
+        { term:'0〜3ヶ月', head:'基礎の獲得', body:'納品できる最小スキルセットを固め、ポートフォリオを3本用意。同時に得意領域を1つに絞り込みます。', kpis:['ポートフォリオ 3本','提供領域の絞り込み','稼働可能時間の設計'] },
+        { term:'3〜6ヶ月', head:'実践演習', body:'副業として実案件を受注。見積・契約・納品のフローを回し、単価と工数の相場感を身体で覚えます。', kpis:['有償案件 3〜5件','見積 / 契約テンプレ','リピート獲得 1件'] },
+        { term:'6ヶ月〜', head:'独立フェーズ', body:'月次の固定収益が生活費を上回った段階で独立判断。単価改定と紹介経路づくりで収益を安定させます。', kpis:['月次固定収益の確保','単価改定の実施','紹介 / 継続の経路づくり'] },
+      ],
+      roi:{ nowMul:1.0, y1:1.15, y3:1.66, payback:'月20万円規模の受注が安定した場合、回収目安は 約5〜8ヶ月。' },
+      metrics:[
+        { label:'フリーランス案件の伸び',     value:'+27%', bar:79, color:'#E3C87F' },
+        { label:'フルリモート案件の割合',     value:'86%',  bar:86, color:'#5FD8BE' },
+        { label:'月20万以上の案件比率',       value:'52%',  bar:52, color:'#9C8CF7' },
+        { label:'想定 平均年商レンジ',         value:'560〜1200万', bar:80, color:'#7C6BF0' },
+      ],
+    },
+    global: {
+      title:'グローバル越境キャリア人材',
+      tagline:'国内市場だけを前提にしない選択は、そのまま報酬レンジの拡張につながります。必要なのは完璧な語学力ではなく、「英語で選考を突破し、実務を回す」実装力です。',
+      badges:['報酬レンジ拡張','リモート適性 最高','中長期の資産になる'],
+      demand:80,
+      tracks:[
+        { name:'業務英語の土台（読む・書く）', start:0, len:3,  tone:'core',       note:'週4h' },
+        { name:'会議で発言する練習',           start:1, len:5,  tone:'core',       note:'週3〜4h' },
+        { name:'専門領域を英語で説明する',     start:3, len:4,  tone:'practice',   note:'週3h' },
+        { name:'英文レジュメ / LinkedIn 整備', start:4, len:2,  tone:'output',     note:'週3h' },
+        { name:'英語面接対策（模擬面接）',     start:5, len:4,  tone:'practice',   note:'週2〜3h' },
+        { name:'外資・海外リモート求人の調査', start:5, len:3,  tone:'practice',   note:'週2h' },
+        { name:'応募と選考プロセス',           start:8, len:4,  tone:'transition', note:'選考中心' },
+        { name:'入社後の立ち上がり準備',       start:10, len:2, tone:'transition', note:'週2h' },
+        { name:'毎日の英語インプット',         start:0, len:12, tone:'habit',      note:'毎日20分' },
+      ],
+      themes:[
+        {
+          title:'「使う場面」から英語を逆算する',
+          why:'汎用的な語学学習は成果が出るまでが長すぎます。自分の職種で実際に発生する場面に絞ると、到達までが一気に短くなります。',
+          items:['自分の業務で必要な英語の場面を洗い出す','その場面で使う定型表現の暗記と反復','英文メール・ドキュメントの型づくり','発音より「伝わる速度」を優先した練習'],
+          hours:'週4時間 × 12週',
+          goal:'業務メールと社内ドキュメントを、辞書に頼らず読み書きできる状態',
+        },
+        {
+          title:'専門性を英語で語れるようにする',
+          why:'選考で問われるのは語学力そのものではなく、専門性を英語で説明できるかです。ここが日本人候補者の最大の差になります。',
+          items:['自分の実績を英語で説明する原稿づくり','専門用語と業界表現のインプット','質疑に対する即答パターンの準備','数字と成果を使った簡潔な説明の練習'],
+          hours:'週3時間 × 16週',
+          goal:'自分の職務実績を英語で3分間、原稿なしで説明できる状態',
+        },
+        {
+          title:'選考プロセスに最適化する',
+          why:'海外・外資の選考は国内と流れが違います。書類の書式から面接の評価軸まで、前提を知らないだけで落ちます。',
+          items:['英文レジュメ（1枚 / 実績ベース）の作成','LinkedIn プロフィールの整備と検索対策','行動面接（STAR形式）の回答準備','リファレンスチェックへの備え'],
+          hours:'週3時間 × 12週',
+          goal:'英文レジュメが完成し、模擬面接を5回以上こなしている状態',
+        },
+        {
+          title:'入社後の立ち上がりまで設計する',
+          why:'採用されて終わりではありません。最初の3ヶ月で信頼を得られるかが、その後の任される範囲を決めます。',
+          items:['異文化下でのコミュニケーション前提の理解','非同期・時差のある働き方への適応','期待値のすり合わせ方（自分から確認する)','最初の90日で出す成果の計画'],
+          hours:'週2時間 × 8週',
+          goal:'入社後90日の行動計画を、自分の言葉で書けている状態',
+        },
+      ],
+      gain:[3,2,1,2,2,3],
+      roadmap:[
+        { term:'0〜3ヶ月', head:'基礎の獲得', body:'業務で使う英語に範囲を絞って集中。読む・書く・会議で発言する、の3点を優先的に立ち上げます。', kpis:['英語会議での発言','英文メール / ドキュメント','語学スコアの基準達成'] },
+        { term:'3〜6ヶ月', head:'実践演習', body:'英文レジュメと面接ストーリーを整備し、外資・海外リモートの選考へ。同時に専門スキルも英語で説明できる状態にします。', kpis:['英文レジュメ完成','模擬面接 5回以上','専門領域の英語説明'] },
+        { term:'6ヶ月〜', head:'ポジション獲得', body:'外資系・海外リモート・国内グローバル部門への転換。通貨と市場が変わることで年収レンジ自体が変わります。', kpis:['外資 / 海外求人への応募','オファー条件の比較','異文化下での立ち上がり'] },
+      ],
+      roi:{ nowMul:1.0, y1:1.26, y3:1.58, payback:'外資・海外リモート転換が成立した場合、回収目安は 約6〜10ヶ月。' },
+      metrics:[
+        { label:'英語必須求人の伸び',         value:'+21%', bar:68, color:'#E3C87F' },
+        { label:'海外リモート可の割合',       value:'64%',  bar:64, color:'#5FD8BE' },
+        { label:'国内比の報酬プレミアム',     value:'+29%', bar:74, color:'#9C8CF7' },
+        { label:'想定 平均年収レンジ',         value:'720〜1100万', bar:88, color:'#7C6BF0' },
+      ],
+    },
+    specialist: {
+      title:'深化型 スペシャリスト',
+      tagline:'広く浅い状態から抜け出し、一点の深さで選ばれる人へ。専門性は「時間の投下量 × 領域の選定」で決まります。まず戦う領域を確定させることが最短ルートです。',
+      badges:['替えがきかない','単価が積み上がる','学習の複利が効く'],
+      demand:85,
+      tracks:[
+        { name:'専門領域の確定（比較・調査）', start:0, len:1,  tone:'core',       note:'週4h' },
+        { name:'体系的な基礎の通し学習',       start:0, len:4,  tone:'core',       note:'週5〜6h' },
+        { name:'手を動かす演習の反復',         start:2, len:5,  tone:'practice',   note:'週4h' },
+        { name:'実務相当の制作物（2本）',      start:4, len:5,  tone:'practice',   note:'週5h' },
+        { name:'レビューを受けて直すサイクル', start:4, len:6,  tone:'output',     note:'隔週1回' },
+        { name:'技術発信・アウトプット',       start:5, len:6,  tone:'output',     note:'月2本' },
+        { name:'より深い領域への掘り下げ',     start:8, len:4,  tone:'practice',   note:'週4h' },
+        { name:'スキルの棚卸しと証明づくり',   start:9, len:3,  tone:'transition', note:'選考準備' },
+        { name:'学習ログの蓄積',               start:0, len:12, tone:'habit',      note:'毎日記録' },
+      ],
+      themes:[
+        {
+          title:'戦う領域を1つに決める',
+          why:'いま最も避けるべきは、複数分野を同時に触って全てが中途半端に終わることです。最初の1ヶ月は領域の選定だけに使って構いません。',
+          items:['候補領域の求人数・単価・将来性の比較','自分の既存経験との接続点の確認','必要な学習量と到達までの期間の試算','半年間これをやると決めて記録に残す'],
+          hours:'週4時間 × 4週',
+          goal:'専門領域を1つに確定し、そこを選んだ理由を説明できる状態',
+        },
+        {
+          title:'基礎を最短で通し切る',
+          why:'つまみ食いの学習は、あとで必ず抜けが露出します。網羅性のある教材を一度通し切ることが、遠回りに見えて最短です。',
+          items:['体系的な教材を1つ決めて完走する','用語と概念を自分の言葉で説明できるようにする','手を動かす演習を毎週こなす','分からなかった箇所を記録して後で回収する'],
+          hours:'週5〜6時間 × 16週',
+          goal:'基礎教材を完走し、未回収の疑問がリスト化されている状態',
+        },
+        {
+          title:'レビューを受ける回数を増やす',
+          why:'独学の限界は、自分の間違いに気づけないことです。到達点は「学習時間」より「レビューを受けた回数」でほぼ決まります。',
+          items:['第三者にコードや成果物を見せる場を確保する','指摘を分類して、再発防止のチェックリストにする','他人の成果物をレビューする側も経験する','品質基準を言語化して自己チェックに使う'],
+          hours:'隔週1回 × 24週',
+          goal:'外部レビューを10回以上受け、指摘の傾向を自分で説明できる状態',
+        },
+        {
+          title:'深さを外から見える形にする',
+          why:'専門性は主張ではなく証拠で評価されます。発信と成果物が、そのまま「この領域はこの人」という認知に変わります。',
+          items:['実務相当の制作物を2本つくり切る','学んだ内容を記事・登壇として外に出す','スキルの棚卸し（できること / まだ弱いこと）','専門職ポジションの募集要件との突き合わせ'],
+          hours:'週3〜4時間 × 24週',
+          goal:'制作物2本と発信が積み上がり、専門領域について外部から声がかかる状態',
+        },
+      ],
+      gain:[2,3,2,3,1,1],
+      roadmap:[
+        { term:'0〜3ヶ月', head:'基礎の獲得', body:'領域を1つに確定し、体系的な基礎を最短で通します。毎週アウトプットを残し、学習を可視化します。', kpis:['専門領域の確定','基礎カリキュラム完走','週次アウトプット習慣'] },
+        { term:'3〜6ヶ月', head:'実践演習', body:'実務レベルの課題に取り組み、レビューを受けて品質を上げるサイクルへ。深さが説明できる成果物を作ります。', kpis:['実務相当の制作物 2本','コードレビュー / 添削','技術発信 or 登壇'] },
+        { term:'6ヶ月〜', head:'ポジション獲得', body:'専門職としての転職または社内での役割変更。「この領域はこの人」と言われる状態が単価に直結します。', kpis:['専門職ポジション応募','スキルの棚卸しと証明','単価 / 等級の見直し'] },
+      ],
+      roi:{ nowMul:1.0, y1:1.16, y3:1.45, payback:'専門職ポジションへの転換が成立した場合、回収目安は 約8〜13ヶ月。' },
+      metrics:[
+        { label:'専門職求人の伸び（前年比）', value:'+24%', bar:73, color:'#E3C87F' },
+        { label:'リモート可求人の割合',       value:'67%',  bar:67, color:'#5FD8BE' },
+        { label:'資格 / 実績が評価される率',   value:'78%',  bar:78, color:'#9C8CF7' },
+        { label:'想定 平均年収レンジ',         value:'600〜900万', bar:76, color:'#7C6BF0' },
+      ],
+    },
+
+    product: {
+      title:'事業起点の プロダクト企画人材',
+      tagline:'「作る」側から「何を作るか決める」側へ回るキャリアです。顧客の課題と事業数値の両方を扱える人材は常に不足しており、職種としての希少性が高い領域です。',
+      badges:['需要 拡大','職種の希少性 高','これまでの経験が効く'],
+      demand:88,
+      gain:[2,2,2,2,2,3],
+      roadmap:[
+        { term:'0〜3ヶ月', head:'基礎の獲得', body:'プロダクト思考の基礎と、顧客課題を掘る技術を習得。実際にユーザーへ話を聞き、課題を仮説として書き出せる状態を作ります。', kpis:['ユーザーヒアリング10件','課題仮説の言語化','プロダクト基礎知識'] },
+        { term:'3〜6ヶ月', head:'実践演習', body:'要件定義と優先順位づけの実践へ。小さな機能改善を企画から実装依頼まで自分で通し切ります。', kpis:['要件定義書の作成','優先順位の判断基準づくり','開発チームとの協働'] },
+        { term:'6ヶ月〜', head:'ポジション獲得', body:'企画職・PdMへの転換。「何を作らないと判断したか」まで語れると、経験者と並べても評価されます。', kpis:['改善実績 2〜3件','企画職 / PdM求人への応募','プロダクト提案の実施'] },
+      ],
+      roi:{ nowMul:1.0, y1:1.20, y3:1.46, payback:'企画職・PdMへの転換が成立した場合、受講費・学習投資の回収目安は 約8〜12ヶ月。' },
+      metrics:[
+        { label:'PdM / 企画職求人の伸び',   value:'+31%', bar:82, color:'#E3C87F' },
+        { label:'リモート可求人の割合',     value:'74%',  bar:74, color:'#5FD8BE' },
+        { label:'他職種からの転換の割合',   value:'46%',  bar:46, color:'#9C8CF7' },
+        { label:'想定 平均年収レンジ',       value:'640〜920万', bar:80, color:'#7C6BF0' },
+      ],
+      tracks:[
+        { name:'プロダクト思考の基礎',       start:0, len:2,  tone:'core',       note:'週3h' },
+        { name:'顧客課題のリサーチ手法',     start:0, len:3,  tone:'core',       note:'週4h' },
+        { name:'ユーザーヒアリングの実施',   start:2, len:4,  tone:'practice',   note:'月2〜3件' },
+        { name:'要件定義とドキュメント',     start:3, len:4,  tone:'core',       note:'週3h' },
+        { name:'データで仮説を検証する',     start:5, len:4,  tone:'practice',   note:'週3h' },
+        { name:'小さな改善を企画〜実装まで', start:4, len:6,  tone:'practice',   note:'実務のなかで' },
+        { name:'結果の振り返りと社内共有',   start:7, len:4,  tone:'output',     note:'月1本' },
+        { name:'企画職向けの経歴再構成',     start:9, len:3,  tone:'transition', note:'選考準備' },
+        { name:'使っているプロダクトの分解', start:0, len:12, tone:'habit',      note:'毎週1本' },
+      ],
+      themes:[
+        {
+          title:'「作りたいもの」ではなく「解くべき課題」から始める',
+          why:'企画職で最も評価されないのは、思いつきベースの提案です。課題の存在を自分で確認できることが、この職種の入場条件になります。',
+          items:['ユーザーヒアリングの設計と実施（誘導しない聞き方）','課題と要望を切り分ける','課題の大きさと発生頻度の見積り','解かない課題を決める判断'],
+          hours:'週4時間 × 12週',
+          goal:'自分で10人に話を聞き、課題仮説を根拠つきで説明できる状態',
+        },
+        {
+          title:'要件に落とし、優先順位をつける',
+          why:'企画の価値は「決めること」にあります。何を先にやるかを説明できないと、開発チームは動けません。',
+          items:['要件定義書の書き方（背景・目的・スコープ）','優先順位の判断軸（影響度 × 実現コスト）','スコープを削る交渉','開発チームへの伝え方と巻き込み'],
+          hours:'週3時間 × 16週',
+          goal:'自分が書いた要件で開発が動き、リリースまで到達した経験があること',
+        },
+        {
+          title:'数字で仮説を検証する',
+          why:'リリースして終わりでは企画の実績になりません。狙った変化が起きたかを測れることが、次の判断の質を上げます。',
+          items:['指標の設計（何が改善したら成功か）','リリース前後の比較と計測','想定外の結果の原因分析','次の打ち手への接続'],
+          hours:'週3時間 × 16週',
+          goal:'施策の成否を数字で説明し、次の意思決定に反映した経験があること',
+        },
+        {
+          title:'企画の実績を証明できる形にする',
+          why:'企画職の選考では「担当した」ではなく「何を判断し、どう変わったか」が問われます。判断の履歴が資産になります。',
+          items:['担当施策の背景・判断・結果の記録','やらないと決めた判断とその理由','数値インパクトの整理','PdM / 企画職の募集要件との突き合わせ'],
+          hours:'週2〜3時間 × 12週',
+          goal:'企画実績を判断の理由まで含めて3件語れる状態',
+        },
+      ],
+    },
+
+    marketing: {
+      title:'数字で売上をつくる グロース人材',
+      tagline:'売上に直接効く職種は、景気の状況にかかわらず必要とされ続けます。感覚ではなく検証で伸ばせる人材は、事業側から最も評価されやすいポジションです。',
+      badges:['成果が数字で出る','事業貢献が明確','副業需要 高'],
+      demand:86,
+      gain:[3,2,2,2,2,2],
+      roadmap:[
+        { term:'0〜3ヶ月', head:'基礎の獲得', body:'売上の分解の仕方と集客チャネルの構造を理解し、計測環境を自分の手で構築します。数字が見えないと改善は始まりません。', kpis:['売上構造の分解','計測環境の構築','チャネル別の基礎知識'] },
+        { term:'3〜6ヶ月', head:'実践演習', body:'コンテンツや広告を実際に作り、検証サイクルを回します。小さな改善を積み上げて再現性を掴みます。', kpis:['施策の実行 5件以上','A/Bテストの設計','CVR改善の実績'] },
+        { term:'6ヶ月〜', head:'ポジション獲得', body:'マーケティング職への転換、または副業としての支援開始。数字で語れる改善実績がそのまま採用要件を満たします。', kpis:['成果レポートの作成','マーケ職 / 副業案件への応募','再現できる手順の言語化'] },
+      ],
+      roi:{ nowMul:1.0, y1:1.21, y3:1.50, payback:'マーケティング職への転換または副業受注が成立した場合、回収目安は 約7〜11ヶ月。' },
+      metrics:[
+        { label:'マーケ職求人の伸び',       value:'+26%', bar:76, color:'#E3C87F' },
+        { label:'リモート可求人の割合',     value:'78%',  bar:78, color:'#5FD8BE' },
+        { label:'副業案件の需要',           value:'高い', bar:84, color:'#9C8CF7' },
+        { label:'想定 平均年収レンジ',       value:'600〜900万', bar:79, color:'#7C6BF0' },
+      ],
+      tracks:[
+        { name:'売上構造と数値の基礎',       start:0, len:3,  tone:'core',       note:'週4h' },
+        { name:'計測環境の構築と分析',       start:1, len:2,  tone:'core',       note:'週3h' },
+        { name:'コンテンツ / 広告の制作',    start:2, len:5,  tone:'practice',   note:'週4h' },
+        { name:'検証サイクルの設計',         start:4, len:4,  tone:'core',       note:'週3h' },
+        { name:'改善施策の実行と反復',       start:4, len:6,  tone:'practice',   note:'実務のなかで' },
+        { name:'自分の媒体を育てる',         start:2, len:8,  tone:'practice',   note:'週3h' },
+        { name:'成果レポートの作成',         start:7, len:4,  tone:'output',     note:'月1本' },
+        { name:'マーケ職 / 副業への応募',    start:9, len:3,  tone:'transition', note:'選考・営業' },
+        { name:'数値の日次チェック',         start:0, len:12, tone:'habit',      note:'毎日10分' },
+      ],
+      themes:[
+        {
+          title:'売上を分解できるようにする',
+          why:'「売上を伸ばす」は施策になりません。どの数字を動かすのかまで分解できて初めて、打ち手が決まります。',
+          items:['売上 = 流入 × CVR × 単価 × 頻度 の分解','チャネル別の特性とコスト構造','ファネルのどこで落ちているかの特定','改善余地の大きい箇所の見極め'],
+          hours:'週4時間 × 12週',
+          goal:'担当領域の売上を数式に分解し、ボトルネックを指摘できる状態',
+        },
+        {
+          title:'自分の手で作れるようにする',
+          why:'外注の管理しかできない人と、自分で作れる人では、施策の速度が桁違いになります。まずは作れる範囲を広げてください。',
+          items:['ランディングページと訴求文の作成','広告クリエイティブの制作と入稿','SEO / コンテンツの制作フロー','メール・SNSでの配信設計'],
+          hours:'週4時間 × 20週',
+          goal:'企画から公開まで、自分ひとりで施策を1本出せる状態',
+        },
+        {
+          title:'検証のサイクルを設計する',
+          why:'当たった施策より、なぜ当たったかを説明できることが価値になります。それが再現性であり、採用側が見ている点です。',
+          items:['仮説の立て方と検証可能な形への落とし込み','A/Bテストの設計と必要期間の見積り','統計的に見て意味のある差の判断','失敗施策からの学びの記録'],
+          hours:'週3時間 × 16週',
+          goal:'検証サイクルを5回以上回し、勝ちパターンを言語化できている状態',
+        },
+        {
+          title:'成果を再現性として語る',
+          why:'数字の実績は最も強い証明手段です。ただし前提条件つきで語れないと、運が良かっただけと見なされます。',
+          items:['改善実績の記録（前提・施策・結果）','再現するための手順の文書化','担当外の領域への応用可能性の整理','マーケ職・副業案件の要件との突き合わせ'],
+          hours:'週2〜3時間 × 12週',
+          goal:'改善実績を3件、再現手順つきで説明できる状態',
+        },
+      ],
+    },
+
+    creative: {
+      title:'課題解決型 クリエイティブ人材',
+      tagline:'見た目を整える人ではなく、課題を視覚と体験で解く人へ。感性ではなく手順で成果を出せるデザイナーは、事業側からの需要が安定しています。',
+      badges:['成果物が形に残る','リモート適性 高','副業との相性が良い'],
+      demand:79,
+      gain:[2,3,2,2,2,1],
+      roadmap:[
+        { term:'0〜3ヶ月', head:'基礎の獲得', body:'レイアウト・配色・タイポグラフィの原則とツール操作を習得。既存UIの改善案を作り、なぜそう直したかを説明できる状態にします。', kpis:['デザイン原則の習得','ツールの基本操作','改善トレース 10本'] },
+        { term:'3〜6ヶ月', head:'実践演習', body:'実案件相当の制作へ。要件から設計意図まで説明できるレベルの成果物を積み上げます。', kpis:['制作物 3本','設計意図の言語化','フィードバックの反映'] },
+        { term:'6ヶ月〜', head:'ポジション獲得', body:'ポートフォリオを軸にした転職、または副業としての受注開始。作品の量ではなく、思考の見え方が評価されます。', kpis:['ポートフォリオ完成','転職 / 副業への応募','単価の設定'] },
+      ],
+      roi:{ nowMul:1.0, y1:1.14, y3:1.40, payback:'デザイン職への転換または副業受注が成立した場合、回収目安は 約9〜14ヶ月。' },
+      metrics:[
+        { label:'デザイン職求人の伸び',     value:'+18%', bar:64, color:'#E3C87F' },
+        { label:'リモート可求人の割合',     value:'81%',  bar:81, color:'#5FD8BE' },
+        { label:'未経験可 求人の割合',       value:'29%',  bar:29, color:'#9C8CF7' },
+        { label:'想定 平均年収レンジ',       value:'520〜780万', bar:70, color:'#7C6BF0' },
+      ],
+      tracks:[
+        { name:'デザインの原則を学ぶ',       start:0, len:3,  tone:'core',       note:'週4h' },
+        { name:'ツールの習熟',               start:0, len:2,  tone:'core',       note:'週4h' },
+        { name:'既存UIの改善トレース',       start:1, len:4,  tone:'practice',   note:'週4h' },
+        { name:'情報設計とユーザー導線',     start:3, len:4,  tone:'core',       note:'週3h' },
+        { name:'実案件相当の制作（3本）',    start:4, len:5,  tone:'practice',   note:'週5h' },
+        { name:'講評を受けて直すサイクル',   start:4, len:6,  tone:'output',     note:'隔週1回' },
+        { name:'ポートフォリオの構成',       start:8, len:3,  tone:'output',     note:'週4h' },
+        { name:'転職 / 副業案件への応募',    start:9, len:3,  tone:'transition', note:'選考・営業' },
+        { name:'良いデザインの収集と分析',   start:0, len:12, tone:'habit',      note:'毎日10分' },
+      ],
+      themes:[
+        {
+          title:'感性ではなく原則で説明できるようにする',
+          why:'「なんとなく良い」では修正依頼に応えられません。原則を知っていると、指摘を受けても崩れずに直せます。',
+          items:['余白・整列・コントラストの原則','配色の設計（色数を絞る技術）','タイポグラフィと可読性','アクセシビリティの基準'],
+          hours:'週4時間 × 12週',
+          goal:'自分のデザインの各要素について、なぜそうしたかを言葉で説明できる状態',
+        },
+        {
+          title:'手を止めずに量をこなす',
+          why:'デザインは知識より試行回数で伸びます。既存の優れたUIを分解して再現する作業が、最も効率の良い訓練になります。',
+          items:['優れたUIのトレースと構造の分解','制作スピードを上げるツール操作','コンポーネントの考え方と再利用','制作フローの型づくり'],
+          hours:'週4時間 × 16週',
+          goal:'トレース10本＋オリジナル制作3本を完了している状態',
+        },
+        {
+          title:'「なぜそうしたか」を言語化する',
+          why:'採用側が見ているのは完成物の美しさより、そこに至った思考です。ここが独学者と実務経験者の差になります。',
+          items:['要件から設計方針を導く過程の記録','ユーザーの課題と解決策の対応づけ','却下した案とその理由','講評を受けて直した履歴'],
+          hours:'週3時間 × 16週',
+          goal:'制作物ごとに、課題→方針→結果の流れを説明できる状態',
+        },
+        {
+          title:'ポートフォリオを選考の武器に変える',
+          why:'デザイン職の選考はほぼポートフォリオで決まります。並べるだけでは弱く、見せる順序と説明が結果を左右します。',
+          items:['掲載作品の選定（多いほど良いわけではない）','1作品あたりの説明構成','見せる順序と第一印象の設計','希望する職種・領域との整合'],
+          hours:'週4時間 × 12週',
+          goal:'3〜5作品で構成され、それぞれ設計意図が説明されたポートフォリオがある状態',
+        },
+      ],
+    },
+
+    entrepreneur: {
+      title:'仕組みをつくる 事業オーナー',
+      tagline:'自分が動いた分だけ収入になる働き方から、仕組みが動いて収益が生まれる状態へ。必要なのは特別なアイデアではなく、小さく試して検証し続ける運用力です。',
+      badges:['収益の上限がない','検証の速度が勝負','当初は二軸運用を推奨'],
+      demand:72,
+      gain:[3,2,2,2,3,2],
+      roadmap:[
+        { term:'0〜3ヶ月', head:'検証フェーズ', body:'事業アイデアを作る前に、その課題が本当に存在し、対価が支払われるかを確かめます。ここを飛ばすと後の工程がすべて無駄になります。', kpis:['顧客ヒアリング 20件','課題の存在確認','事前予約 or 少額決済の獲得'] },
+        { term:'3〜6ヶ月', head:'提供開始', body:'最小限の商品・サービスで提供を開始。収支を自分で把握し、単価と原価の構造を掴みます。', kpis:['最小限の商品の提供開始','初回売上の獲得','収支管理の仕組み'] },
+        { term:'6ヶ月〜', head:'事業化フェーズ', body:'再現性のある集客経路の確立と、自分以外が動く仕組みづくり。ここで初めて「事業」になります。', kpis:['集客経路の確立','月次の粗利の安定','業務の一部の外部化'] },
+      ],
+      roi:{ nowMul:1.0, y1:1.08, y3:1.72, payback:'月次の粗利が20万円を超えた段階で、初期投資の回収目安は 約6〜10ヶ月。ただし初年度は投資が先行します。' },
+      metrics:[
+        { label:'副業から始めた起業家の割合', value:'71%',  bar:71, color:'#E3C87F' },
+        { label:'開業3年後の継続率',         value:'62%',  bar:62, color:'#5FD8BE' },
+        { label:'初年度に黒字化した割合',     value:'38%',  bar:38, color:'#9C8CF7' },
+        { label:'想定 年商レンジ',           value:'480〜1500万', bar:82, color:'#7C6BF0' },
+      ],
+      tracks:[
+        { name:'顧客ヒアリングによる検証',   start:0, len:3,  tone:'core',       note:'週5h' },
+        { name:'会計・税務・法務の基礎',     start:1, len:2,  tone:'core',       note:'週2h' },
+        { name:'最小限の商品をつくる',       start:2, len:3,  tone:'practice',   note:'週6h' },
+        { name:'テスト販売（小さく売る）',   start:4, len:3,  tone:'practice',   note:'週5h' },
+        { name:'集客チャネルの確立',         start:5, len:5,  tone:'output',     note:'週4h' },
+        { name:'収支管理と単価の見直し',     start:6, len:5,  tone:'output',     note:'週2h' },
+        { name:'自分以外が動く仕組み化',     start:9, len:3,  tone:'transition', note:'週4h' },
+        { name:'開業手続き / 法人化の判断',  start:10, len:2, tone:'transition', note:'手続き' },
+        { name:'顧客の声の記録',             start:1, len:11, tone:'habit',      note:'毎週' },
+      ],
+      themes:[
+        {
+          title:'作る前に、売れるかを確かめる',
+          why:'起業で最も多い失敗は、誰も欲しがらないものを完成させてしまうことです。検証は作る前にしか意味がありません。',
+          items:['想定顧客20人へのヒアリング設計','「欲しい」と「買う」の違いの見極め','事前予約・少額決済による意思確認','検証結果を受けて方針を変える判断'],
+          hours:'週5時間 × 12週',
+          goal:'完成前に、対価を払う意思のある顧客を3人以上確認できている状態',
+        },
+        {
+          title:'最小限で提供を始める',
+          why:'完璧に作り込んでから出すほど、修正が効かなくなります。粗くても提供を始め、顧客の反応で直すほうが速く到達します。',
+          items:['提供価値を1つに絞った商品設計','手作業でも成立する提供フロー','価格の設定と、その根拠の説明','初期顧客からのフィードバック収集'],
+          hours:'週6時間 × 12週',
+          goal:'商品・サービスを実際に提供し、初回の売上が発生している状態',
+        },
+        {
+          title:'お金の流れを自分で握る',
+          why:'売上が立っても、原価と入金サイクルを把握していないと資金が尽きます。数字の管理は起業の生存条件です。',
+          items:['売上・原価・粗利の毎月の把握','入金と支払いのタイミング管理','事業と個人のお金の分離','税務・保険・各種手続きの理解'],
+          hours:'週2時間 × 20週',
+          goal:'月次の収支を自分で締められ、来月の資金繰りが読める状態',
+        },
+        {
+          title:'自分が動かなくても回る形にする',
+          why:'自分の稼働が売上の上限になっている状態は、独立であって事業ではありません。仕組み化がこの方向性の到達点です。',
+          items:['再現性のある集客経路の確立','業務の手順化と、任せられる範囲の切り出し','外部パートナー・ツールへの委譲','継続課金・リピートの設計'],
+          hours:'週4時間 × 12週',
+          goal:'自分が1週間手を離しても、売上がゼロにならない状態',
+        },
+      ],
+    },
+
+    stable: {
+      title:'長期安定型 専門職キャリア',
+      tagline:'短期の年収最大化ではなく、10年20年働き続けられる状態を優先する選択です。資格と実務の積み上げは景気に左右されにくく、生活設計と両立しやすい強さがあります。',
+      badges:['景気耐性 高','生活と両立しやすい','積み上げが効く'],
+      demand:75,
+      gain:[2,3,2,2,1,1],
+      roadmap:[
+        { term:'0〜3ヶ月', head:'基礎の獲得', body:'長期的に需要が消えにくい領域を見極め、資格や基礎知識の学習を開始します。領域選びがこの方向性の成否を決めます。', kpis:['対象領域の確定','学習計画の作成','基礎知識のインプット'] },
+        { term:'3〜6ヶ月', head:'実践演習', body:'資格取得と並行して、学んだ内容を実務に適用します。資格だけでは評価につながりません。', kpis:['資格試験の受験','実務での適用事例','職場内での役割拡大'] },
+        { term:'6ヶ月〜', head:'安定化フェーズ', body:'資格と実務経験の組み合わせで、代替されにくい立ち位置を作ります。生活設計とセットで判断していきます。', kpis:['隣接領域の知識追加','業務改善の提案と実施','等級 / 手当の見直し交渉'] },
+      ],
+      roi:{ nowMul:1.0, y1:1.10, y3:1.30, payback:'資格手当・等級変更を含めた回収目安は 約12〜18ヶ月。伸び幅は緩やかですが、下振れしにくい特性があります。' },
+      metrics:[
+        { label:'有効求人倍率の安定度',       value:'高い', bar:80, color:'#E3C87F' },
+        { label:'資格保有者が優遇される率',   value:'69%',  bar:69, color:'#5FD8BE' },
+        { label:'平均勤続年数の長さ',         value:'長い', bar:76, color:'#9C8CF7' },
+        { label:'想定 平均年収レンジ',         value:'480〜700万', bar:65, color:'#7C6BF0' },
+      ],
+      tracks:[
+        { name:'長期需要のある領域の調査',   start:0, len:2,  tone:'core',       note:'週3h' },
+        { name:'資格試験の学習（基礎）',     start:1, len:4,  tone:'core',       note:'週5h' },
+        { name:'実務での適用と記録',         start:3, len:6,  tone:'practice',   note:'実務のなかで' },
+        { name:'資格試験の受験',             start:5, len:2,  tone:'output',     note:'試験対策' },
+        { name:'業務改善の提案と実施',       start:6, len:5,  tone:'practice',   note:'実務のなかで' },
+        { name:'隣接領域の知識の追加',       start:7, len:4,  tone:'core',       note:'週3h' },
+        { name:'社内での役割拡大',           start:9, len:3,  tone:'transition', note:'交渉・調整' },
+        { name:'生活設計との突き合わせ',     start:10, len:2, tone:'transition', note:'週2h' },
+        { name:'毎日30分の学習習慣',         start:0, len:12, tone:'habit',      note:'毎日30分' },
+      ],
+      themes:[
+        {
+          title:'需要が消えない領域を選ぶ',
+          why:'安定を目的にするなら、領域選びが最重要です。同じ努力量でも、置く場所を間違えると10年後に価値が残りません。',
+          items:['法制度や社会構造に支えられた領域の把握','人手不足が構造的に続く分野の調査','自動化されにくい業務特性の理解','自分の既存経験との接続点の確認'],
+          hours:'週3時間 × 8週',
+          goal:'10年後も必要とされる根拠を挙げて、対象領域を1つ選べている状態',
+        },
+        {
+          title:'資格を実務と結びつける',
+          why:'資格は入口の証明にすぎません。実務でどう使ったかまで語れないと、手当以上の評価にはつながりません。',
+          items:['試験範囲の体系的な学習と過去問演習','学んだ内容を実務に当てはめる練習','資格を活かせる業務への手挙げ','実務での適用事例の記録'],
+          hours:'週5時間 × 16週',
+          goal:'資格を取得し、それを使って解決した実務課題を説明できる状態',
+        },
+        {
+          title:'職場で代替されにくい位置を作る',
+          why:'安定は勤続年数では生まれません。「この業務はこの人に聞く」という状態が、実質的な安定になります。',
+          items:['担当領域の業務フローの整理と改善提案','属人化ではなく、頼られる状態の作り方','隣接業務まで見える範囲を広げる','後任育成と引き継ぎ資料の整備'],
+          hours:'週3時間 × 20週',
+          goal:'自分に相談が集まる領域が明確にあり、改善提案が採用された実績があること',
+        },
+        {
+          title:'生活設計とセットで考える',
+          why:'この方向性を選ぶ最大の理由は、仕事以外の時間を守ることです。学習計画も生活の側から逆算して組むべきです。',
+          items:['向こう5年の生活イベントの棚卸し','必要な収入水準の把握','働き方の制約条件の明確化','等級・手当・勤務条件の交渉準備'],
+          hours:'週2時間 × 8週',
+          goal:'必要な収入と守りたい時間が数字で決まり、それに沿った働き方を選べている状態',
+        },
+      ],
+    },
+
+    /* ---------------------------------------------------------
+       ai_driven_dev：テストユーザー専用の見本プラン（AI駆動開発）。
+       Q6の選択肢ではないため診断結果画面では使われず、マイページの
+       学習スケジュール生成（title / tracks / themes）だけが参照される。
+       DIRECTION_FIT や roadmap / roi / metrics は不要なので持たない。
+       --------------------------------------------------------- */
+    ai_driven_dev: {
+      title:'AI駆動開発エンジニア（見本プラン）',
+      tracks:[
+        { name:'生成AI・LLMの基礎理解',           start:0,  len:2,  tone:'core',       note:'週3h' },
+        { name:'AIコーディングツールの習得',      start:1,  len:2,  tone:'core',       note:'週3〜4h' },
+        { name:'仕様を言語化するプロンプト設計',  start:2,  len:3,  tone:'core',       note:'週3h' },
+        { name:'AIペアプロで小さなアプリを作る',  start:3,  len:4,  tone:'practice',   note:'週4〜6h' },
+        { name:'テスト・リファクタへのAI活用',    start:5,  len:3,  tone:'practice',   note:'週3h' },
+        { name:'AIエージェント・API連携の開発',   start:6,  len:4,  tone:'practice',   note:'週4h' },
+        { name:'個人開発アプリの公開・改善',      start:8,  len:4,  tone:'output',     note:'月1リリース' },
+        { name:'ポートフォリオ整備と技術発信',    start:10, len:2,  tone:'transition', note:'選考準備' },
+        { name:'開発ログを毎週発信する',          start:0,  len:12, tone:'habit',      note:'毎週ひとつ' },
+      ],
+      themes:[
+        {
+          title:'生成AI・LLMを「開発の道具」として理解する',
+          why:'AI駆動開発の土台は、モデルに何ができて何ができないかを見極める力です。仕組みを知らずにツールだけ使うと、出力の検証ができません。',
+          items:['LLMの仕組みと、得意・苦手な処理の見極め','主要モデルとAPIの使い分け','トークン・コンテキストウィンドウの基礎','AI出力を検証する基準づくり'],
+          hours:'週3時間 × 8週',
+          goal:'生成AIの得意・不得意を根拠つきで説明し、用途ごとにモデルを選べる状態',
+        },
+        {
+          title:'AIコーディングツールを使いこなす',
+          why:'Claude Code や GitHub Copilot のようなツールは、指示の出し方で成果が数倍変わります。「AIに書かせて、人が検証する」開発フローを型として身につけます。',
+          items:['AIコーディングツールの環境構築','仕様・制約を正確に伝えるプロンプトの書き方','AIが書いたコードのレビュー観点','リポジトリ全体を扱うエージェント的開発の進め方'],
+          hours:'週3〜4時間 × 8週',
+          goal:'小さな機能追加をAIとの往復だけで完結させ、差分を自分の言葉で説明できる状態',
+        },
+        {
+          title:'AIペアプログラミングでアプリを完成させる',
+          why:'チュートリアルの写経では実力になりません。要件定義からリリースまでを一度通すことで、AI駆動開発の全工程が自分のものになります。',
+          items:['要件定義とタスクへの分解','AIと往復しながら実装を進めるフロー','テストコードの自動生成と検証','エラー解析・デバッグへのAI活用'],
+          hours:'週4〜6時間 × 16週',
+          goal:'自分で企画した小さなアプリを、AIペアプロで完成・公開できている状態',
+        },
+        {
+          title:'成果を公開し、開発者としての証明をつくる',
+          why:'AI駆動開発の実力は「作ったもの」と「作る過程」でしか証明できません。公開された成果物が、転職・案件獲得の交渉力になります。',
+          items:['個人開発アプリのデプロイと公開','READMEと開発プロセスの記事化','GitHubポートフォリオの整備','AI活用実績の職務経歴書への反映'],
+          hours:'週2〜3時間 × 12週',
+          goal:'公開リポジトリと開発記事が揃い、AI駆動開発の実績として提示できる状態',
+        },
+      ],
+    },
+  };
+
+  /* 業界別の基礎データ */
+  const INDUSTRY = {
+    sales:   { label:'営業・販売',      base:[3,2,3,2,3,3], salary:[420,560], strength:'対人折衝と数値責任を担ってきた経験は、提案・交渉・意思決定の場でそのまま効きます' },
+    it:      { label:'IT・エンジニア',  base:[3,4,3,3,2,3], salary:[520,680], strength:'技術的な土台があるため、学習コストが他業界出身者より明確に低い位置からスタートできます' },
+    admin:   { label:'事務・管理',      base:[2,2,3,2,2,3], salary:[360,480], strength:'業務フロー全体を俯瞰してきた経験は、改善対象を正しく見つける力として希少です' },
+    medical: { label:'医療・福祉',      base:[3,4,3,2,2,2], salary:[400,540], strength:'専門資格と対人支援の実績は、信頼を前提とする領域で強い差別化になります' },
+    public:  { label:'教育・公務',      base:[3,3,3,2,2,2], salary:[420,560], strength:'制度や手順を正確に扱う力は、品質と再現性が求められる領域で高く評価されます' },
+    other:   { label:'その他 / 求職中', base:[2,2,2,2,2,3], salary:[320,440], strength:'固定された業界慣習に縛られていないため、方向転換のコストが最も小さい立ち位置です' },
+  };
+
+  /* 自己申告の年収帯。range は ROI 試算の起点、band は市場価値スコアの補正に使う。
+     range が null（未回答）の場合は INDUSTRY[業界].salary へフォールバックする。 */
+  const SALARY = {
+    lt300:      { label:'300万円未満',        range:[240, 300],   band:0 },
+    '300to400': { label:'300〜400万円',       range:[300, 400],   band:1 },
+    '400to500': { label:'400〜500万円',       range:[400, 500],   band:2 },
+    '500to700': { label:'500〜700万円',       range:[500, 700],   band:3 },
+    '700to1000':{ label:'700〜1000万円',      range:[700, 1000],  band:4 },
+    gt1000:     { label:'1000万円以上',       range:[1000, 1300], band:5 },
+    none:       { label:'未回答 / 収入なし',  range:null,         band:null },
+  };
+
+  const RADAR_AXES = ['市場価値','専門スキル','実務経験','学習投下量','発信・人脈','変化適応力'];
+
+  /* 得意領域 → 6軸レーダーのどの軸に効くか（RADAR_AXES のインデックス） */
+  const STRENGTH_AXIS = {
+    logic:1, design:1, tech:1, numbers:1,
+    ops:2, lead:2, detail:2,
+    comm:4, writing:4,
+    selflearn:5, language:5, idea:5,
+  };
+
+  /* 方向性ごとの、相性のよい価値観（values）と衝突しやすいNG条件（clash）。
+     適合度スコアと「要調整」の指摘は、すべてこの表から算出する。 */
+  const DIRECTION_FIT = {
+    ai_dx:        { values:['growth','income','expertise','impact'],                clash:['longterm','restart'] },
+    management:   { values:['influence','team','income','stability'],               clash:['overtime','quota'] },
+    specialist:   { values:['expertise','stability','growth'],                      clash:['longterm'] },
+    product:      { values:['influence','creative','growth','team'],                clash:['quota','overtime'] },
+    marketing:    { values:['income','growth','creative','autonomy'],               clash:['quota'] },
+    creative:     { values:['creative','expertise','autonomy'],                     clash:['paycut','overtime'] },
+    global:       { values:['growth','impact','income','influence'],                clash:['relocate','longterm'] },
+    freelance:    { values:['autonomy','income','balance','expertise'],             clash:['unstable','paycut','solo'] },
+    entrepreneur: { values:['autonomy','influence','income','impact','creative'],   clash:['unstable','paycut','longterm'] },
+    stable:       { values:['stability','balance','team','expertise'],              clash:['paycut'] },
+  };
+
+  const HOURS_TEXT = { lt3:'週3時間未満', '3to5':'週3〜5時間', '5to10':'週5〜10時間', gt15:'週15時間以上' };
+  const BUDGET_TEXT = { sprint:'3ヶ月の短期集中', half:'半年のじっくり型', year:'1年の長期投資', lean:'低予算・最短ルート' };
+  const ISSUE_TEXT = {
+    income:'年収の引き上げ', remote:'リモートワークの実現', future:'将来性への不安の解消',
+    skill:'専門性の獲得', control:'裁量の拡大', time:'時間の自由の確保',
+    evaluation:'評価と成果の不一致', growth:'成長の停滞', undecided:'方向性の決定',
+    company:'所属組織・業界のリスク', overwork:'労働負荷の軽減', people:'環境そのものの変更',
+    side:'収入源の複線化', change:'未経験分野への転向', family:'家庭との両立',
+  };
+  const VALUE_TEXT = {
+    income:'収入の最大化', autonomy:'裁量と自由', stability:'安定と継続', growth:'成長の実感',
+    expertise:'専門性の追求', impact:'社会的な意義', influence:'影響力の大きさ',
+    balance:'生活との調和', creative:'創造・表現', team:'仲間との達成',
+  };
+  const STRENGTH_TEXT = {
+    logic:'論理・分析', comm:'対人・折衝', writing:'文章・言語化', design:'デザイン・審美',
+    tech:'ITツール・技術', numbers:'数字・計数管理', ops:'業務設計・段取り', lead:'育成・チーム運営',
+    selflearn:'独学・キャッチアップ', language:'語学', idea:'企画・発想', detail:'正確性・緻密さ',
+  };
+  const NG_TEXT = {
+    paycut:'一時的な年収ダウン', unstable:'収入の不安定化', overtime:'長時間労働・休日対応',
+    relocate:'転居・遠方通勤', shift:'夜勤・不規則シフト', quota:'ノルマ・強い数値目標',
+    solo:'孤立した一人作業', longterm:'1年以上かかる学習', restart:'未経験からのやり直し',
+    none:'特に制約なし',
+  };
+
+  /* =========================================================
+     4. 状態管理
+     ========================================================= */
+  const answers = {};
+  let step = 0;
+
+  const $ = (id) => document.getElementById(id);
+  const clamp01 = (n) => (Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 1);
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* rAF は非表示タブでは発火しないため、必ず最終状態を書き込む保険をかける。
+     reduced-motion 指定時はアニメーションを行わず即座に最終状態にする。 */
+  function tween(dur, onFrame, onDone) {
+    if (REDUCED) { onDone(); return; }
+    let finished = false;
+    const finish = () => { if (!finished) { finished = true; onDone(); } };
+    const t0 = performance.now();
+    const frame = (t) => {
+      if (finished) return;
+      const k = clamp01((t - t0) / dur);
+      if (k >= 1) { finish(); return; }
+      onFrame(1 - Math.pow(1 - k, 3));
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+    setTimeout(finish, dur + 200);
+  }
+  const views = {
+    intro:   $('view-intro'),
+    quiz:    $('view-quiz'),
+    loading: $('view-loading'),
+    result:  $('view-result'),
+    member:  $('view-member'),
+  };
+
+  function show(name) {
+    Object.entries(views).forEach(([k, el]) => el.classList.toggle('hidden', k !== name));
+    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+  }
+
+  /* =========================================================
+     5. 診断フォーム描画
+     ========================================================= */
+  $('q-total').textContent = QUESTIONS.length;
+
+  const dots = $('q-dots');
+  QUESTIONS.forEach((_, i) => {
+    const d = document.createElement('span');
+    d.className = 'h-1.5 w-6 rounded-full bg-white/10 transition-all';
+    d.dataset.i = i;
+    dots.appendChild(d);
+  });
+
+  function renderStep() {
+    const q = QUESTIONS[step];
+    const stage = $('q-stage');
+    stage.classList.remove('stage-in');
+    void stage.offsetWidth;
+    stage.classList.add('stage-in');
+
+    $('q-cat').textContent = q.cat;
+    $('q-title').textContent = q.title;
+    $('q-hint').textContent = q.hint;
+    $('q-multi').classList.toggle('hidden', q.type !== 'multi');
+    $('q-index').textContent = step + 1;
+    $('q-error').classList.add('hidden');
+
+    const pct = Math.round((step / QUESTIONS.length) * 100);
+    $('q-bar').style.width = pct + '%';
+    $('q-percent').textContent = pct;
+
+    [...dots.children].forEach((d, i) => {
+      d.className = 'h-1.5 rounded-full transition-all ' +
+        (i === step ? 'w-8 bg-gold-400' : i < step ? 'w-6 bg-gold-600/50' : 'w-6 bg-white/10');
+    });
+
+    const wrap = $('q-options');
+    // 選択肢が多い設問（課題15択・方向性10択）は3カラムに広げて縦の長さを抑える
+    const many = q.options.length >= 9;
+    wrap.className = 'mt-6 grid gap-3 sm:grid-cols-2' + (many ? ' lg:grid-cols-3' : '');
+    wrap.innerHTML = '';
+    const current = answers[q.id];
+
+    q.options.forEach((o) => {
+      const selected = q.type === 'multi'
+        ? Array.isArray(current) && current.includes(o.v)
+        : current === o.v;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'opt';
+      btn.setAttribute('aria-pressed', String(selected));
+      btn.innerHTML = `
+        <span class="tick" aria-hidden="true"></span>
+        <span class="flex items-start gap-3 pr-6">
+          <span class="grid ${many ? 'h-8 w-8 text-[14px]' : 'h-9 w-9 text-[15px]'} shrink-0 place-items-center rounded-xl bg-white/[.07]">${o.icon}</span>
+          <span>
+            <span class="block ${many ? 'text-[13.5px]' : 'text-[14px]'} font-semibold leading-snug text-slate-100">${o.label}</span>
+            <span class="mt-1 block text-[11.5px] leading-relaxed text-slate-400">${o.desc}</span>
+          </span>
+        </span>`;
+      btn.addEventListener('click', () => select(q, o.v, btn));
+      wrap.appendChild(btn);
+    });
+
+    $('btn-prev').disabled = step === 0;
+    $('btn-next').textContent = step === QUESTIONS.length - 1 ? '診断結果を見る →' : '次へ';
+  }
+
+  function select(q, value, btn) {
+    $('q-error').classList.add('hidden');
+
+    if (q.type === 'multi') {
+      let arr = Array.isArray(answers[q.id]) ? [...answers[q.id]] : [];
+      const i = arr.indexOf(value);
+      if (i >= 0) arr.splice(i, 1); else arr.push(value);
+
+      // 排他選択肢（「特に制約はない」など）は他の選択と両立させない
+      if (q.exclusive && arr.includes(q.exclusive)) {
+        arr = value === q.exclusive ? [q.exclusive] : arr.filter((v) => v !== q.exclusive);
+      }
+
+      answers[q.id] = arr;
+      // 排他処理で押していないボタンの状態も変わり得るため、全ボタンを同期する
+      [...$('q-options').children].forEach((b, bi) =>
+        b.setAttribute('aria-pressed', String(arr.includes(q.options[bi].v))));
+      return;
+    }
+
+    // 単一選択：選択状態を切り替えるだけ。誤タップでの誤進行を防ぐため自動遷移はしない
+    answers[q.id] = value;
+    [...$('q-options').children].forEach((b) => b.setAttribute('aria-pressed', 'false'));
+    btn.setAttribute('aria-pressed', 'true');
+  }
+
+  function validate() {
+    const q = QUESTIONS[step];
+    const a = answers[q.id];
+    const ok = q.type === 'multi' ? Array.isArray(a) && a.length > 0 : !!a;
+    if (!ok) {
+      const e = $('q-error');
+      e.textContent = q.type === 'multi' ? '1つ以上選択してください。' : '選択肢を1つ選んでください。';
+      e.classList.remove('hidden');
+    }
+    return ok;
+  }
+
+  function next() {
+    if (!validate()) return;
+    if (step < QUESTIONS.length - 1) { step++; renderStep(); }
+    else runAnalysis();
+  }
+
+  $('btn-next').addEventListener('click', next);
+  $('btn-prev').addEventListener('click', () => { if (step > 0) { step--; renderStep(); } });
+  $('btn-start').addEventListener('click', () => { show('quiz'); renderStep(); });
+
+  /* =========================================================
+     6. 擬似バックエンド解析
+     ========================================================= */
+  const LOG_STEPS = [
+    '入力データをデータベースに照合中...',
+    '職種別の求人トレンド指標を取得...',
+    'Claude Opus 5 によるキャリアパス分析を開始...',
+    '12ヶ月の学習工程表を構築中...',
+    'ROI（投資回収）シミュレーションを実行...',
+    'パーソナライズドレポートを生成中...',
+  ];
+
+  function runAnalysis() {
+    show('loading');
+    const ul = $('load-log');
+    ul.innerHTML = '';
+    const nodes = LOG_STEPS.map((t) => {
+      const li = document.createElement('li');
+      li.className = 'log-line flex items-start gap-3';
+      li.innerHTML = `<span class="mt-[3px] font-sans text-[10px] text-gold-500">▸</span><span class="flex-1">${t}</span><span class="state text-[11px] text-slate-500"></span>`;
+      ul.appendChild(li);
+      return li;
+    });
+
+    const pctEl = $('load-pct');
+    let i = 0;
+    const per = 700;
+    const total = per * LOG_STEPS.length;
+    const t0 = performance.now();
+
+    const tick = () => {
+      const p = Math.round(clamp01((performance.now() - t0) / total) * 100);
+      pctEl.textContent = p;
+      if (p < 100) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+
+    const advance = () => {
+      if (i > 0) {
+        nodes[i - 1].classList.remove('active');
+        nodes[i - 1].classList.add('done');
+        nodes[i - 1].querySelector('.state').textContent = 'done';
+      }
+      if (i >= nodes.length) {
+        setTimeout(() => { buildResult(); show('result'); }, 320);
+        return;
+      }
+      nodes[i].classList.add('active');
+      nodes[i].querySelector('.state').textContent = '…';
+      i++;
+      // rAF が止まる環境（非表示タブ等）でも進捗が見えるようにフォールバック
+      pctEl.textContent = Math.max(Number(pctEl.textContent) || 0,
+                                   Math.round((i / nodes.length) * 100));
+      setTimeout(advance, per);
+    };
+    advance();
+  }
+
+  /* =========================================================
+     6-b. 価値観 × 方向性の適合度
+     ========================================================= */
+  /* 選んだ価値観のうち何割が方向性と噛み合うかを基準にし、
+     方向性と正面衝突するNG条件1件ごとに減点する。 */
+  function computeAlignment(dirKey) {
+    const fit = DIRECTION_FIT[dirKey] || DIRECTION_FIT.ai_dx;
+    const vals = answers.values || [];
+    const ngs = (answers.constraints || []).filter((v) => v !== 'none');
+
+    const matched = vals.filter((v) => fit.values.includes(v));
+    const missed  = vals.filter((v) => !fit.values.includes(v));
+    const clashes = ngs.filter((v) => fit.clash.includes(v));
+
+    const base = vals.length ? 45 + Math.round((matched.length / vals.length) * 50) : 60;
+    const pct = Math.max(20, Math.min(98, base - clashes.length * 12));
+    return { pct, matched, missed, clashes };
+  }
+
+  /* 「A」「B」形式の列挙。件数が多い場合は上位 max 件＋残数で示す */
+  function listStr(labels, max = 3, unit = '件') {
+    if (!labels.length) return '';
+    const shown = labels.slice(0, max);
+    return `「${shown.join('」「')}」`
+      + (labels.length > shown.length ? `ほか計${labels.length}${unit}` : '');
+  }
+
+  /* =========================================================
+     7. 擬似AIレスポンス生成
+     ========================================================= */
+  function buildAnalysisText(ind, arc, align) {
+    const issues    = (answers.issues || []).map((v) => ISSUE_TEXT[v]);
+    const values    = (answers.values || []).map((v) => VALUE_TEXT[v]);
+    const strengths = (answers.strengths || []).map((v) => STRENGTH_TEXT[v]);
+    const ngs       = (answers.constraints || []).filter((v) => v !== 'none');
+    const hours  = HOURS_TEXT[answers.hours];
+    const budget = BUDGET_TEXT[answers.budget];
+    const sal    = SALARY[answers.salary] || SALARY.none;
+
+    // 課題は最大15件選択できるため、本文では上位3件を挙げ、残りは件数で示す
+    const issueStr = listStr(issues, 3, '点');
+    const manyNote = issues.length >= 6
+      ? `挙げていただいた課題が${issues.length}点に及ぶため、本プランではすべてを同時に解決しようとせず、着手する順序を明確にしています。`
+      : '';
+
+    const salaryNote = sal.range
+      ? `現在の年収は<strong class="text-slate-100">${sal.label}</strong>の帯にあり、`
+      : '年収は未回答のため、業界平均を起点に試算しています。';
+
+    const p1 = `${ind.label}のご経験をベースに、<strong class="text-gold-300">${arc.title}</strong>としての伸びしろを解析しました。`
+      + `${salaryNote}ご相談内容は${issueStr}に集約されています。`
+      + `これは同じ経歴・年収レンジの相談者のなかでも典型的かつ、打ち手が明確なパターンです。${manyNote}`;
+
+    const strengthNote = strengths.length
+      ? `加えて、ご自身で挙げられた${listStr(strengths, 3, '領域')}は、${arc.title}の初期フェーズでそのまま使える資産です。`
+      : '';
+
+    const p2 = `強みとして評価できるのは、${ind.strength}という点です。${strengthNote}`
+      + `一方で、現状は<strong class="text-slate-100">スキルの「証明手段」が不足している</strong>状態にあります。`
+      + `経験そのものは十分でも、それを第三者が評価できる形（成果物・数値・肩書き）に変換できていないため、市場での評価が実力より低く出ています。`;
+
+    // 価値観と方向性の噛み合い方で、プランの読み方そのものが変わる
+    const alignNote = align.pct >= 75
+      ? `この方向性との適合度は <strong class="text-gold-300">${align.pct}%</strong>。よく噛み合っているため、方向性はここで確定させて構いません。迷いに使う時間を、そのまま学習に回せます。`
+      : align.pct >= 55
+        ? `この方向性との適合度は <strong class="text-gold-300">${align.pct}%</strong>。大枠は合っていますが、満たされ方に時間差が出ます。序盤で手応えが薄く感じる可能性を、あらかじめ織り込んでおいてください。`
+        : `この方向性との適合度は <strong class="text-rose-300">${align.pct}%</strong> と低めに出ています。方向性そのものを疑うべき水準ではありませんが、「なぜこの道を選ぶのか」を自分の言葉で説明できる状態にしてから走り出してください。`;
+
+    const missedNote = align.missed.length
+      ? `なお${listStr(align.missed.map((v) => VALUE_TEXT[v]), 2, '項目')}は、この方向性の初期フェーズでは満たされにくい要素です。プラン後半（7ヶ月目以降）で回収する前提で読んでください。`
+      : '';
+
+    const p3 = `大切にしたいこととして${listStr(values, 3, '項目')}を挙げられています。${alignNote}${missedNote}`;
+
+    const timeNote = answers.hours === 'lt3'
+      ? '確保できる時間が週3時間未満であることを踏まえ、範囲を絞り込んだ設計を優先しました。'
+      : answers.hours === 'gt15'
+        ? '週15時間以上を確保できるため、短期集中で一気に到達するプランが機能します。'
+        : `${hours}という現実的な学習時間に合わせて、無理なく積み上がる順序で構成しています。`;
+
+    const ngNote = ngs.length
+      ? `また、${listStr(ngs.map((v) => NG_TEXT[v]), 3, '件')}を避けたい条件として受け取りました。`
+        + `工程表は、この条件を満たしたまま到達できるルートだけで構成しています。`
+      : `避けたい条件は特にないとのことなので、選択肢を絞らず最短ルートで組んでいます。`;
+
+    const clashNote = align.clashes.length
+      ? `ただし${listStr(align.clashes.map((v) => NG_TEXT[v]), 2, '件')}は、`
+        + `<strong class="text-rose-300">${arc.title}という方向性と正面から衝突します</strong>。`
+        + `方向性を変えるか、条件を一定期間だけ緩めるか。この判断が最初に必要です。`
+      : '';
+
+    const p4 = `本プランは、${budget}を前提に、${timeNote}${ngNote}${clashNote}`;
+
+    // 課題・制約・確保時間から、もっとも大きいリスクを1つ特定する
+    const iss = answers.issues || [];
+    const risk =
+      align.clashes.length
+        ? '想定される最大のリスクは、方向性と譲れない条件が両立しないまま走り出すことです。対策として、最初の1ヶ月で「どこまでなら条件を緩められるか」を先に決めてください。ここを曖昧にしたまま学習を進めると、到達直前で選べなくなります。'
+      : iss.includes('undecided')
+        ? '想定される最大のリスクは、方向性が固まらないまま学習を始めてしまうことです。対策として、最初の1ヶ月は「決めること」だけに使って構いません。領域を1つに確定してから走り出したほうが、結果として到達は早くなります。'
+      : answers.hours === 'lt3'
+        ? '想定される最大のリスクは、学習時間の不足による中断です。対策として、週次で必ず1つ小さなアウトプットを残す運用をおすすめします。進捗が目に見えることが、そのまま継続率に直結します。'
+      : ngs.includes('longterm')
+        ? '想定される最大のリスクは、成果が出るまでの期間が想定より延びることです。対策として、6ヶ月時点で「外に出せる成果物が1つある」ことを中間ゴールに置いてください。期間を短く保つ方法は、扱う範囲を狭めることだけです。'
+      : (iss.includes('overwork') || iss.includes('family'))
+        ? '想定される最大のリスクは、学習時間そのものが確保できずに計画が崩れることです。対策として、まず1週間の時間の使い方を記録し、確実に空いている枠だけを学習に割り当ててください。空くはずの時間を前提に組んだ計画は、ほぼ確実に崩れます。'
+      : (iss.includes('future') || iss.includes('company'))
+        ? '想定されるリスクは、不安を起点に手を広げすぎることです。対策として、最初の3ヶ月は領域を1つに固定してください。複数を同時に走らせた場合、どれも証明可能な水準に届かないまま時間が過ぎます。'
+        : '想定されるリスクは、学習が「インプットだけ」で終わることです。対策として、各フェーズの終わりに必ず外部の目に触れる成果物を出してください。レビューを受けた回数が、そのまま到達点を決めます。';
+
+    return [p1, p2, p3, p4, risk];
+  }
+
+  /* =========================================================
+     8. スコア計算
+     ========================================================= */
+  function computeScores(ind, arc) {
+    const band = (SALARY[answers.salary] || SALARY.none).band;
+
+    // 得意領域を軸ごとに集計する。広く浅い自己申告で全軸が上がらないよう、
+    // 同じ軸に2つ以上集まった場合だけ加点する。
+    const bump = [0, 0, 0, 0, 0, 0];
+    (answers.strengths || []).forEach((s) => {
+      const ax = STRENGTH_AXIS[s];
+      if (ax != null) bump[ax] += 1;
+    });
+
+    const now = ind.base.map((b, i) => {
+      let v = b;
+      // 年収帯は市場価値の現在地に直結する
+      if (i === 0 && band != null) v += band >= 4 ? 1 : band <= 1 ? -1 : 0;
+      if (bump[i] >= 2) v += 1;
+      if (answers.hours === 'gt15' && i === 3) v += 1;
+      if (answers.hours === 'lt3' && i === 3) v -= 1;
+      return Math.max(1, Math.min(5, v));
+    });
+    const after = now.map((v, i) => Math.max(1, Math.min(5, v + (arc.gain[i] || 0))));
+
+    const sum = (a) => a.reduce((x, y) => x + y, 0);
+    const score = Math.round((sum(now) / (5 * 6)) * 100);
+    const gain  = Math.round((sum(after) / (5 * 6)) * 100) - score;
+    return { now, after, score, gain };
+  }
+
+  /* =========================================================
+     9. レーダーチャート
+     ========================================================= */
+  function drawRadar(svg, now, after) {
+    const cx = 160, cy = 148, R = 96, N = 6;
+    const pt = (i, r) => {
+      const a = -Math.PI / 2 + (i * 2 * Math.PI) / N;
+      return [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
+    };
+    const poly = (vals, r = R) => vals.map((v, i) => pt(i, (v / 5) * r).join(',')).join(' ');
+
+    let g = '';
+    for (let ring = 1; ring <= 5; ring++) {
+      g += `<polygon points="${poly(Array(N).fill(ring))}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="1"/>`;
+    }
+    for (let i = 0; i < N; i++) {
+      const [x, y] = pt(i, R);
+      g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,.07)"/>`;
+      const [lx, ly] = pt(i, R + 26);
+      g += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle"
+              font-size="10.5" fill="#8892AD" font-family="'Noto Sans JP',sans-serif">${RADAR_AXES[i]}</text>`;
+    }
+
+    g += `<polygon id="rd-after" points="${poly(Array(N).fill(0))}" fill="rgba(227,200,127,.20)" stroke="#E3C87F" stroke-width="2"/>`;
+    g += `<polygon id="rd-now"   points="${poly(Array(N).fill(0))}" fill="rgba(140,152,184,.18)" stroke="#8892AD" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+
+    svg.innerHTML = g;
+
+    const animate = (el, target) => tween(950,
+      (e) => el.setAttribute('points', poly(target.map((v) => v * e))),
+      ()  => el.setAttribute('points', poly(target)));
+    setTimeout(() => {
+      animate(svg.querySelector('#rd-after'), after);
+      animate(svg.querySelector('#rd-now'), now);
+    }, 220);
+  }
+
+  /* =========================================================
+     10. ガントチャート（12ヶ月の学習工程表）
+     ========================================================= */
+  const MONTHS = 12;
+
+  function renderGantt(arc) {
+    // 各行の背景グリッド線（1〜12ヶ月ぶんのセル）
+    const cells = Array.from({ length: MONTHS },
+      (_, i) => `<div class="g-cell" style="grid-column:${i + 2}"></div>`).join('');
+
+    // 月ラベル行
+    let html = `
+      <div class="g-row" style="min-height:1.9rem">
+        <div class="g-label text-[10px] tracking-[.16em] text-slate-500">経過月</div>
+        ${Array.from({ length: MONTHS }, (_, i) => `
+          <div class="g-cell grid place-items-center text-[10px] text-slate-500" style="grid-column:${i + 2}">${i + 1}</div>`).join('')}
+      </div>`;
+
+    // フェーズ帯（3ステップと対応）
+    const phases = [
+      { s:0, l:3, label:'PHASE 1  基礎の獲得',   bg:'rgba(201,162,75,.16)',  bd:'rgba(201,162,75,.45)',  fg:'#F2E2B4' },
+      { s:3, l:3, label:'PHASE 2  実践演習',     bg:'rgba(124,107,240,.16)', bd:'rgba(124,107,240,.45)', fg:'#C6BCFB' },
+      { s:6, l:6, label:'PHASE 3  ポジション獲得', bg:'rgba(52,191,163,.14)', bd:'rgba(52,191,163,.42)',  fg:'#8EE6D2' },
+    ];
+    html += `
+      <div class="g-row" style="min-height:2.2rem;border-top:0">
+        <div class="g-label text-[10px] tracking-[.16em] text-slate-500">フェーズ</div>
+        ${cells}
+        ${phases.map((p) => `
+          <div class="g-phase" style="grid-column:${p.s + 2}/span ${p.l};background:${p.bg};border:1px solid ${p.bd};color:${p.fg}">
+            ${p.label}
+          </div>`).join('')}
+      </div>`;
+
+    // 学習トラック
+    html += arc.tracks.map((t) => {
+      const tone = TONE[t.tone];
+      return `
+        <div class="g-row">
+          <div class="g-label">${t.name}</div>
+          ${cells}
+          <div class="g-bar" style="grid-column:${t.start + 2}/span ${t.len};background:${tone.bg};color:${tone.fg}">
+            <span class="truncate">${t.note}</span>
+          </div>
+        </div>`;
+    }).join('');
+
+    $('r-gantt').innerHTML = html;
+
+    // 凡例（実際に使われているトラック種別のみ）
+    const used = [...new Set(arc.tracks.map((t) => t.tone))];
+    $('r-legend').innerHTML = used.map((k) => `
+      <span class="flex items-center gap-1.5">
+        <i class="h-2.5 w-4 rounded-sm" style="background:${TONE[k].bg}"></i>${TONE[k].label}
+      </span>`).join('');
+
+    // バーを左から伸ばす演出（rAF に依存しない CSS トランジション）
+    const bars = $('r-gantt').querySelectorAll('.g-bar');
+    if (REDUCED) { bars.forEach((b) => b.classList.add('on')); return; }
+    bars.forEach((b, i) => setTimeout(() => b.classList.add('on'), 120 + i * 70));
+  }
+
+  /* =========================================================
+     10-b. 学習テーマ詳細
+     ========================================================= */
+  function renderThemes(arc) {
+    $('r-themes').innerHTML = arc.themes.map((th, i) => `
+      <article class="glass flex flex-col rounded-3xl p-6 sm:p-7">
+        <div class="flex items-start gap-4">
+          <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-gold-500/35 bg-gold-500/10 font-sans text-sm font-bold text-gold-300">
+            ${String(i + 1).padStart(2, '0')}
+          </span>
+          <h4 class="font-jp-serif pt-1 text-[17px] font-bold leading-snug text-slate-50">${th.title}</h4>
+        </div>
+
+        <p class="mt-4 text-[13px] leading-relaxed text-slate-400">${th.why}</p>
+
+        <p class="mt-6 text-[10px] tracking-[.18em] text-slate-500">学ぶ内容</p>
+        <ul class="mt-3 space-y-2">
+          ${th.items.map((it) => `
+            <li class="flex items-start gap-2.5 text-[13px] leading-relaxed text-slate-300">
+              <span class="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-gold-400"></span>${it}
+            </li>`).join('')}
+        </ul>
+
+        <div class="mt-auto grid gap-3 border-t border-white/8 pt-5 sm:grid-cols-[auto_1fr]">
+          <div class="sm:pr-5 sm:border-r sm:border-white/8">
+            <p class="text-[10px] tracking-[.16em] text-slate-500">学習時間の目安</p>
+            <p class="mt-1 text-[13px] font-semibold text-slate-200">${th.hours}</p>
+          </div>
+          <div>
+            <p class="text-[10px] tracking-[.16em] text-mint-400">次に進める到達点</p>
+            <p class="mt-1 text-[13px] leading-relaxed text-slate-300">${th.goal}</p>
+          </div>
+        </div>
+      </article>`).join('');
+  }
+
+  /* =========================================================
+     10-c. 診断インプット（回答サマリー）と適合度
+     ========================================================= */
+  function renderProfile(ind, arc, align) {
+    const chips = (labels, warn = []) => {
+      if (!labels.length) return `<span class="text-[12px] text-slate-500">—</span>`;
+      return labels.map(({ t, v }) => {
+        const bad = warn.includes(v);
+        return `<span class="rounded-lg border px-2.5 py-1 text-[12px] ${
+          bad ? 'border-rose-400/40 bg-rose-400/10 text-rose-200' : 'border-white/10 bg-white/[.04] text-slate-300'
+        }">${bad ? '⚠ ' : ''}${t}</span>`;
+      }).join('');
+    };
+    const pick = (ids, map) => (ids || []).map((v) => ({ v, t: map[v] }));
+
+    const rows = [
+      { k:'現在のフィールド',   c: chips([{ v:'-', t: ind.label }]) },
+      { k:'現在の年収',         c: chips([{ v:'-', t: (SALARY[answers.salary] || SALARY.none).label }]) },
+      { k:'得意領域',           c: chips(pick(answers.strengths, STRENGTH_TEXT)) },
+      { k:'抱えている課題',     c: chips(pick(answers.issues, ISSUE_TEXT)) },
+      { k:'大切にしたい価値観', c: chips(pick(answers.values, VALUE_TEXT)) },
+      { k:'目指す方向性',       c: chips([{ v:'-', t: arc.title }]) },
+      { k:'避けたい条件',       c: chips(pick(answers.constraints, NG_TEXT), align.clashes) },
+      { k:'学習リソース',       c: chips([
+          { v:'-', t: HOURS_TEXT[answers.hours] },
+          { v:'-', t: BUDGET_TEXT[answers.budget] },
+        ]) },
+    ];
+
+    $('r-profile').innerHTML = rows.map((r) => `
+      <div>
+        <dt class="text-[10px] tracking-[.18em] text-slate-500">${r.k}</dt>
+        <dd class="mt-2 flex flex-wrap gap-1.5">${r.c}</dd>
+      </div>`).join('');
+
+    $('r-fit-note').innerHTML = align.clashes.length
+      ? `<span class="font-semibold text-rose-300">要調整：</span>`
+        + `${listStr(align.clashes.map((v) => NG_TEXT[v]), 3, '件')}は、${arc.title}を目指すうえで衝突しやすい条件です（上図の ⚠ 印）。`
+        + `条件を優先するなら方向性の見直し、方向性を優先するなら条件を緩める期間の設定 ―― どちらかを先に決めてください。`
+      : align.pct >= 75
+        ? `<span class="font-semibold text-mint-400">整合：</span>`
+          + `価値観・制約と方向性の間に矛盾は見つかりませんでした。以降の工程表は、この条件下で実行可能な内容として読んでください。`
+        : `<span class="font-semibold text-gold-300">補足：</span>`
+          + `決定的な矛盾はありませんが、価値観の一部はこの方向性では後回しになります。`
+          + `優先順位が変わった場合は、方向性を変えて再診断すると比較できます。`;
+  }
+
+  /* =========================================================
+     11. 結果描画
+     ========================================================= */
+  function buildResult() {
+    const arc = ARCHETYPES[answers.direction] || ARCHETYPES.ai_dx;
+    const ind = INDUSTRY[answers.industry] || INDUSTRY.other;
+    const align = computeAlignment(answers.direction);
+    const { now, after, score, gain } = computeScores(ind, arc);
+
+    $('r-model').textContent = 'CLAUDE OPUS 5';
+    $('r-archetype').textContent = arc.title;
+    $('r-tagline').textContent = arc.tagline;
+
+    // 数値カウントアップ
+    const countUp = (el, to, suffix = '') => tween(900,
+      (e) => { el.textContent = Math.round(to * e) + suffix; },
+      ()  => { el.textContent = to + suffix; });
+    countUp($('r-score'), score);
+    countUp($('r-gain'), gain);
+    countUp($('r-demand'), arc.demand);
+    countUp($('r-fit'), align.pct);
+    setTimeout(() => {
+      $('r-score-bar').style.width = score + '%';
+      // 残っている伸びしろ（100 - 現在スコア）のうち、何割をプランで埋められるか
+      const headroom = Math.max(1, 100 - score);
+      $('r-gain-bar').style.width = Math.min(100, Math.round((gain / headroom) * 100)) + '%';
+      $('r-demand-bar').style.width = arc.demand + '%';
+      $('r-fit-bar').style.width = align.pct + '%';
+    }, 120);
+
+    // バッジ
+    $('r-badges').innerHTML = arc.badges.map((b) => `
+      <span class="rounded-full border border-white/12 bg-white/[.05] px-3.5 py-1.5 text-[11px] text-slate-300">
+        ${b}
+      </span>`).join('');
+
+    // AI所見
+    $('r-analysis').innerHTML = buildAnalysisText(ind, arc, align)
+      .map((p) => `<p>${p}</p>`).join('');
+
+    // レーダー
+    drawRadar($('r-radar'), now, after);
+
+    // 診断インプットのサマリーと適合度の注記
+    renderProfile(ind, arc, align);
+
+    // ロードマップ
+    $('r-roadmap').innerHTML = arc.roadmap.map((r, i) => `
+      <div class="glass relative overflow-hidden rounded-2xl p-6">
+        <span class="absolute -right-3 -top-4 font-sans text-[5rem] font-bold leading-none text-white/[.04]">0${i + 1}</span>
+        <p class="relative text-[10px] tracking-[.22em] text-gold-400">${r.term}</p>
+        <p class="font-jp-serif relative mt-2 text-xl font-bold">${r.head}</p>
+        <p class="relative mt-3 text-[13px] leading-relaxed text-slate-400">${r.body}</p>
+        <ul class="relative mt-5 space-y-2 border-t border-white/8 pt-4">
+          ${r.kpis.map((k) => `<li class="flex items-start gap-2 text-[12px] text-slate-300"><span class="mt-[6px] h-1 w-1 shrink-0 rounded-full bg-gold-400"></span>${k}</li>`).join('')}
+        </ul>
+      </div>`).join('');
+
+    // 12ヶ月の工程表 ＋ 学習テーマ詳細
+    renderGantt(arc);
+    renderThemes(arc);
+    $('r-pace').innerHTML =
+      `<span class="font-semibold text-slate-100">確保できる学習時間（${HOURS_TEXT[answers.hours]}）を踏まえて：</span> `
+      + (PACE[answers.hours] || PACE['3to5']);
+
+    // ROI（自己申告の年収を起点にする。未回答の場合のみ業界平均へフォールバック）
+    const sal = SALARY[answers.salary] || SALARY.none;
+    const [lo, hi] = sal.range || ind.salary;
+    $('roi-now-label').textContent = sal.range ? 'ご回答いただいた現在の年収' : '現在の想定レンジ（業界平均）';
+    const fmt = (a, b) => `${a}〜${b}万円`;
+    const y1 = [Math.round(lo * arc.roi.y1), Math.round(hi * arc.roi.y1)];
+    const y3 = [Math.round(lo * arc.roi.y3), Math.round(hi * arc.roi.y3)];
+    $('roi-now').textContent = fmt(lo, hi);
+    $('roi-y1').textContent  = fmt(y1[0], y1[1]);
+    $('roi-y3').textContent  = fmt(y3[0], y3[1]);
+    $('roi-payback').textContent = arc.roi.payback;
+
+    const cap = y3[1];
+    setTimeout(() => {
+      $('roi-now-bar').style.width = Math.round((hi / cap) * 100) + '%';
+      $('roi-y1-bar').style.width  = Math.round((y1[1] / cap) * 100) + '%';
+      $('roi-y3-bar').style.width  = '100%';
+    }, 160);
+
+    $('roi-metrics').innerHTML = arc.metrics.map((m) => `
+      <div class="rounded-2xl border border-white/10 bg-ink-800/60 p-5">
+        <p class="text-[11px] leading-snug text-slate-500">${m.label}</p>
+        <p class="mt-2 font-sans text-xl font-bold" style="color:${m.color}">${m.value}</p>
+        <div class="meter mt-3"><i style="width:${m.bar}%;background:${m.color}"></i></div>
+      </div>`).join('');
+
+    // 会員機能：直近の診断結果を保持し、ログイン済みならその場でマイページに保存する
+    // （テストユーザーは見本プラン固定のため上書きしない）
+    latestDiagnosis = JSON.parse(JSON.stringify(answers));
+    const user = currentUser();
+    if (user && user.email !== TEST_USER.email) saveDiagnosis(user.email);
+    updateResultCta();
+  }
+
+  /* =========================================================
+     12. その他操作
+     ========================================================= */
+  function resetToIntro() {
+    Object.keys(answers).forEach((k) => delete answers[k]);
+    step = 0;
+    show('intro');
+  }
+
+  $('btn-print').addEventListener('click', () => window.print());
+  $('btn-retry').addEventListener('click', resetToIntro);
+
+  // ヘッダーのロゴからもトップへ戻れるようにする
+  $('btn-home').addEventListener('click', (e) => { e.preventDefault(); resetToIntro(); });
+
+  /* =========================================================
+     13. 会員機能（疑似認証・マイページ・進捗管理）
+     ---------------------------------------------------------
+     デモ用のフロントエンド完結実装。ユーザー情報・診断結果・進捗は
+     すべて LocalStorage に保存する（パスワードも平文。実運用不可）。
+     ========================================================= */
+  const LS = {
+    get(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } },
+    set(k, v)  { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* プライベートモード等では保存しない */ } },
+    del(k)     { try { localStorage.removeItem(k); } catch {} },
+  };
+  const USERS_KEY   = 'cc_users';    // { [email]: { name, pass } }
+  const SESSION_KEY = 'cc_session';  // ログイン中の email
+  const diagKey = (email) => `cc_diag::${email}`;      // { answers, savedAt }
+  const progKey = (email) => `cc_progress::${email}`;  // { [taskId]: 'todo'|'doing'|'done' }
+
+  // 直近に表示した診断結果。登録/ログイン完了時にマイページへ引き継ぐ
+  let latestDiagnosis = null;
+
+  /* お試し用のテストユーザー。認証モーダルにも案内を表示している。
+     ログインすると ai_driven_dev（AI駆動開発の見本プラン）のスケジュールが出る。 */
+  const TEST_USER = { email:'test@example.com', pass:'test1234', name:'テストユーザー' };
+  (function seedTestUser() {
+    const users = LS.get(USERS_KEY, {});
+    if (!users[TEST_USER.email]) {
+      users[TEST_USER.email] = { name: TEST_USER.name, pass: TEST_USER.pass };
+      LS.set(USERS_KEY, users);
+    }
+    // 見本の診断結果は毎回上書きして、常に AI駆動開発 のスケジュールが出る状態を保つ
+    LS.set(diagKey(TEST_USER.email), {
+      answers: { direction:'ai_driven_dev', hours:'5to10' },
+      savedAt: new Date().toISOString(),
+    });
+  })();
+
+  const currentUser = () => {
+    const email = LS.get(SESSION_KEY, null);
+    if (!email) return null;
+    const u = LS.get(USERS_KEY, {})[email];
+    return u ? { name: u.name, email } : null;
+  };
+
+  function saveDiagnosis(email) {
+    if (!latestDiagnosis) return;
+    LS.set(diagKey(email), { answers: latestDiagnosis, savedAt: new Date().toISOString() });
+  }
+
+  /* ---------- モーダル共通 ---------- */
+  const MODALS = ['auth-modal', 'material-modal'];
+  function openModal(id) {
+    $(id).hidden = false;
+    document.body.style.overflow = 'hidden';
+    $(id).querySelector('.modal-panel').focus();
+  }
+  function closeModal(id) {
+    $(id).hidden = true;
+    document.body.style.overflow = '';
+  }
+  MODALS.forEach((id) => {
+    // 背景クリック・✕ボタン（data-close）で閉じる
+    $(id).addEventListener('click', (e) => { if (e.target.closest('[data-close]')) closeModal(id); });
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') MODALS.forEach((id) => { if (!$(id).hidden) closeModal(id); });
+  });
+
+  /* ---------- 認証モーダル ---------- */
+  function setAuthTab(mode) {
+    const login = mode === 'login';
+    $('tab-login').setAttribute('aria-selected', String(login));
+    $('tab-register').setAttribute('aria-selected', String(!login));
+    $('form-login').classList.toggle('hidden', !login);
+    $('form-register').classList.toggle('hidden', login);
+    $('auth-error').classList.add('hidden');
+  }
+  function openAuth(mode) { setAuthTab(mode); openModal('auth-modal'); }
+  function authError(msg) {
+    const e = $('auth-error');
+    e.textContent = msg;
+    e.classList.remove('hidden');
+  }
+  $('tab-login').addEventListener('click', () => setAuthTab('login'));
+  $('tab-register').addEventListener('click', () => setAuthTab('register'));
+
+  $('form-register').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name  = $('reg-name').value.trim();
+    const email = $('reg-email').value.trim().toLowerCase();
+    const pass  = $('reg-pass').value;
+    const users = LS.get(USERS_KEY, {});
+    if (users[email]) {
+      authError('このメールアドレスは登録済みです。「ログイン」タブからログインしてください。');
+      return;
+    }
+    users[email] = { name, pass };
+    LS.set(USERS_KEY, users);
+    LS.set(SESSION_KEY, email);
+    onAuthSuccess();
+  });
+
+  $('form-login').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = $('login-email').value.trim().toLowerCase();
+    const pass  = $('login-pass').value;
+    const users = LS.get(USERS_KEY, {});
+    if (!users[email] || users[email].pass !== pass) {
+      authError('メールアドレスまたはパスワードが正しくありません。');
+      return;
+    }
+    LS.set(SESSION_KEY, email);
+    onAuthSuccess();
+  });
+
+  function onAuthSuccess() {
+    // テストユーザーは見本プラン固定のため、直近の診断結果で上書きしない
+    const email = LS.get(SESSION_KEY, '');
+    if (email !== TEST_USER.email) saveDiagnosis(email);
+    $('form-login').reset();
+    $('form-register').reset();
+    closeModal('auth-modal');
+    updateAuthUI();
+    renderMember();
+    show('member');
+  }
+
+  /* ---------- ヘッダー・結果CTAの表示切り替え ---------- */
+  function updateAuthUI() {
+    const user = currentUser();
+    $('btn-login').classList.toggle('hidden', !!user);
+    $('hdr-user').classList.toggle('hidden', !user);
+    $('hdr-user').classList.toggle('flex', !!user);
+    updateResultCta();
+  }
+  function updateResultCta() {
+    const user = currentUser();
+    $('btn-register-cta').querySelector('.cta-label').textContent =
+      user ? 'マイページで学習を始める' : '無料会員登録をする';
+    $('cta-microcopy').innerHTML = user
+      ? 'この診断結果はマイページに保存されました。<strong class="text-gold-300">学習スケジュール</strong>から教材の閲覧と進捗管理ができます。'
+      : '登録すると、この診断結果に連動した<strong class="text-gold-300">あなた専用の学習ロードマップ（ガントチャート）と教材</strong>が閲覧でき、学習の進捗も保存できます。';
+  }
+
+  $('btn-login').addEventListener('click', () => openAuth('login'));
+  $('btn-mypage').addEventListener('click', () => { renderMember(); show('member'); });
+  $('btn-logout').addEventListener('click', () => {
+    LS.del(SESSION_KEY);
+    updateAuthUI();
+    if (!views.member.classList.contains('hidden')) show('intro');
+  });
+  $('btn-register-cta').addEventListener('click', () => {
+    if (currentUser()) { renderMember(); show('member'); }
+    else openAuth('register');
+  });
+
+  /* ---------- きめ細かいガントチャート ---------- */
+  const STATUS = {
+    todo:  { label:'未着手', icon:'○', color:'#8892AD' },
+    doing: { label:'進行中', icon:'◐', color:'#5FD8BE' },
+    done:  { label:'完了',   icon:'✓', color:'#E3C87F' },
+  };
+  // 工程種別ごとに、トラックを分解するサブステップ（期間が短い場合は前から使う）。
+  // name は成果物ベースの具体的な行動、goal は教材モーダルとバーに出す到達目標。
+  const SUBSTEPS = {
+    core: [
+      { name:'全体像をつかむ（入門インプット）', goal:'領域の全体像と頻出用語を自分の言葉で説明できる' },
+      { name:'基本を体系的にインプット',         goal:'主要な概念・操作をひととおり自分の手で試せている' },
+      { name:'小課題で理解度を確認',             goal:'小課題を自力で解き切り、つまずいた点を言語化できている' },
+      { name:'要点を実務目線で整理',             goal:'学んだ内容を自分の業務に当てはめて説明できる' },
+    ],
+    practice: [
+      { name:'演習テーマと完成条件を決める',     goal:'期限と完成条件を決め、すぐ着手できる状態になっている' },
+      { name:'基本ケースの演習を完走',           goal:'手本どおりのケースを最後まで自分で再現できている' },
+      { name:'実データ・応用ケースで演習',       goal:'条件を変えても自力で完走できている' },
+      { name:'レビューを受けて改善',             goal:'第三者の指摘を1回以上反映し、改善点を説明できる' },
+    ],
+    output: [
+      { name:'成果物の企画・構成を固める',       goal:'何を・誰に・どう見せるかを1枚で説明できる' },
+      { name:'成果物を制作する',                 goal:'外に出せる品質の成果物が1つ完成している' },
+      { name:'公開してフィードバックを得る',     goal:'第三者からの反応・指摘を記録できている' },
+      { name:'事例としてまとめ直す',             goal:'ビフォー / アフターを数字つきで語れる' },
+    ],
+    transition: [
+      { name:'市場・求人のリサーチ',             goal:'狙うポジションと要件のギャップを把握している' },
+      { name:'職務経歴書・実績資料の整備',       goal:'「変えた結果」ベースの職務経歴書が完成している' },
+      { name:'応募・カジュアル面談',             goal:'応募・面談を開始し、手応えを記録している' },
+      { name:'選考・条件交渉',                   goal:'評価された点・されなかった点を次に活かせる' },
+    ],
+    habit: [
+      { name:'続ける仕組みをつくる',             goal:'曜日・時間・出す場所を決め、1回目を出せている' },
+      { name:'毎週の記録を継続する',             goal:'週1回のアウトプットが途切れず続いている' },
+      { name:'振り返って型を改善する',           goal:'記録を見返し、負担の少ない型に更新できている' },
+    ],
+  };
+
+  /* トラック名と学習テーマの2-gram一致度で、もっとも関連の深いテーマを引き当てる。
+     十分に一致しない場合は null（教材モーダルのテーマ欄を出さない）。 */
+  function relatedTheme(arc, trackName) {
+    const grams = (s) => {
+      const t = s.replace(/[^\p{L}\p{N}]/gu, '');
+      const g = new Set();
+      for (let i = 0; i < t.length - 1; i++) g.add(t.slice(i, i + 2));
+      return g;
+    };
+    const tg = grams(trackName);
+    let best = null, bestScore = 0;
+    arc.themes.forEach((th) => {
+      const sg = grams(th.title + th.items.join(''));
+      let score = 0;
+      tg.forEach((x) => { if (sg.has(x)) score++; });
+      if (score > bestScore) { bestScore = score; best = th; }
+    });
+    return bestScore >= 2 ? best : null;
+  }
+
+  /* 診断結果のトラック（9本）をサブステップに分解し、教材＋進捗の単位となるタスク一覧を作る */
+  function buildMemberTasks(dirKey) {
+    const arc = ARCHETYPES[dirKey] || ARCHETYPES.ai_dx;
+    const tasks = [];
+    arc.tracks.forEach((t, ti) => {
+      const steps = SUBSTEPS[t.tone] || SUBSTEPS.core;
+      const theme = relatedTheme(arc, t.name);
+      const n = Math.max(1, Math.min(steps.length, t.len));
+      let cursor = t.start;
+      for (let si = 0; si < n; si++) {
+        const len = Math.floor(t.len / n) + (si < t.len % n ? 1 : 0);
+        tasks.push({
+          id: `${dirKey}:${ti}:${si}`,
+          track: t.name, trackIndex: ti,
+          name: steps[si].name, goal: steps[si].goal,
+          tone: t.tone, note: t.note, theme,
+          start: cursor, len,
+        });
+        cursor += len;
+      }
+    });
+    return tasks;
+  }
+
+  let memberTasks = [];
+
+  function renderMember() {
+    const user = currentUser();
+    if (!user) { show('intro'); return; }
+
+    const rec    = LS.get(diagKey(user.email), null);
+    const dirKey = rec && rec.answers && rec.answers.direction;
+    const arc    = dirKey ? ARCHETYPES[dirKey] : null;
+    $('m-empty').classList.toggle('hidden', !!arc);
+    $('m-body').classList.toggle('hidden', !arc);
+    if (!arc) return;
+
+    $('m-username').textContent = user.name;
+    $('m-archetype').textContent = arc.title;
+    $('m-date').textContent = rec.savedAt ? new Date(rec.savedAt).toLocaleDateString('ja-JP') : '—';
+
+    memberTasks = buildMemberTasks(dirKey);
+    const prog = LS.get(progKey(user.email), {});
+    const stat = (t) => STATUS[prog[t.id]] ? prog[t.id] : 'todo';
+
+    // 進捗サマリー
+    const doneN  = memberTasks.filter((t) => stat(t) === 'done').length;
+    const doingN = memberTasks.filter((t) => stat(t) === 'doing').length;
+    const pct = Math.round((doneN / memberTasks.length) * 100);
+    $('m-progress-pct').textContent = pct;
+    $('m-progress-bar').style.width = pct + '%';
+    $('m-progress-text').textContent = `完了 ${doneN} / 全${memberTasks.length}タスク（進行中 ${doingN}）`;
+
+    // ガント本体（結果画面と同じ CSS Grid 構成。バーはボタン化して教材モーダルを開く）
+    const cells = Array.from({ length: MONTHS },
+      (_, i) => `<div class="g-cell" style="grid-column:${i + 2}"></div>`).join('');
+    let html = `
+      <div class="g-row" style="min-height:1.9rem">
+        <div class="g-label text-[10px] tracking-[.16em] text-slate-500">経過月</div>
+        ${Array.from({ length: MONTHS }, (_, i) => `
+          <div class="g-cell grid place-items-center text-[10px] text-slate-500" style="grid-column:${i + 2}">${i + 1}</div>`).join('')}
+      </div>`;
+
+    let curTrack = -1;
+    memberTasks.forEach((t) => {
+      if (t.trackIndex !== curTrack) {
+        curTrack = t.trackIndex;
+        html += `
+          <div class="g-row" style="min-height:2.4rem">
+            <div style="grid-column:1/-1;grid-row:1;padding:.9rem 0 .2rem;font-size:12px;font-weight:700;color:#E3C87F">
+              ${t.track}<span class="ml-2 font-normal text-slate-500">${t.note}</span>
+            </div>
+          </div>`;
+      }
+      const st   = STATUS[stat(t)];
+      const tone = TONE[t.tone];
+      html += `
+        <div class="g-row">
+          <div class="g-label">${t.name}</div>
+          ${cells}
+          <button type="button" class="g-bar g-task on" data-task="${t.id}" data-status="${stat(t)}"
+                  style="grid-column:${t.start + 2}/span ${t.len};background:${tone.bg};color:${tone.fg}"
+                  title="到達目標：${t.goal}"
+                  aria-label="${t.track}：${t.name}（${st.label}）— 教材を開く">
+            <span aria-hidden="true">${st.icon}</span><span class="truncate">🎯 ${t.goal}</span>
+          </button>
+        </div>`;
+    });
+    $('m-gantt').innerHTML = html;
+
+    $('m-pace').innerHTML =
+      `<span class="font-semibold text-slate-100">確保できる学習時間（${HOURS_TEXT[rec.answers.hours] || '未回答'}）を踏まえて：</span> `
+      + (PACE[rec.answers.hours] || PACE['3to5']);
+  }
+
+  // バー → 教材モーダル（イベント委譲）
+  $('m-gantt').addEventListener('click', (e) => {
+    const b = e.target.closest('.g-task');
+    if (b) openMaterial(b.dataset.task);
+  });
+
+  /* ---------- 教材モーダルと進捗更新 ---------- */
+  let activeTaskId = null;
+
+  function openMaterial(taskId) {
+    const t = memberTasks.find((x) => x.id === taskId);
+    if (!t) return;
+    activeTaskId = taskId;
+    $('mat-track').textContent = t.track;
+    $('mat-title').textContent = t.name;
+    $('mat-period').textContent = t.len <= 1
+      ? `${t.start + 1}ヶ月目`
+      : `${t.start + 1}〜${t.start + t.len}ヶ月目`;
+    $('mat-note').textContent = `目安 ${t.note}`;
+    $('mat-tone').textContent = TONE[t.tone].label;
+
+    $('mat-goal').innerHTML =
+      `<span class="font-semibold text-mint-400">🎯 到達目標：</span>${t.goal}`;
+
+    // トラックに関連する学習テーマが引き当てられた場合のみ、扱う内容を具体的に見せる
+    $('mat-theme').classList.toggle('hidden', !t.theme);
+    if (t.theme) {
+      $('mat-theme-title').textContent = t.theme.title;
+      $('mat-theme-items').innerHTML = t.theme.items.map((it) => `
+        <li class="flex items-start gap-2 text-[12.5px] leading-relaxed text-slate-300">
+          <span class="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-gold-400"></span>${it}
+        </li>`).join('');
+    }
+
+    renderMatStatus();
+    openModal('material-modal');
+  }
+
+  function renderMatStatus() {
+    const user = currentUser();
+    if (!user) return;
+    const cur = LS.get(progKey(user.email), {})[activeTaskId] || 'todo';
+    $('mat-status').innerHTML = Object.entries(STATUS).map(([k, s]) => `
+      <button type="button" class="st-btn" data-st="${k}" aria-pressed="${String(k === cur)}">${s.icon} ${s.label}</button>`).join('');
+  }
+
+  $('mat-status').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-st]');
+    const user = currentUser();
+    if (!b || !user || !activeTaskId) return;
+    const prog = LS.get(progKey(user.email), {});
+    prog[activeTaskId] = b.dataset.st;
+    LS.set(progKey(user.email), prog);
+    renderMatStatus();
+    renderMember(); // ガントのバー表示と進捗サマリーへ即反映
+  });
+
+  /* ---------- マイページからの再診断 ---------- */
+  const startDiagnosis = () => {
+    Object.keys(answers).forEach((k) => delete answers[k]);
+    step = 0;
+    show('quiz');
+    renderStep();
+  };
+  $('m-start-diagnosis').addEventListener('click', startDiagnosis);
+  $('m-rediagnose').addEventListener('click', startDiagnosis);
+
+  // 初期表示：保存済みセッションがあればログイン状態で開始する
+  updateAuthUI();
+})();
+</script>
+</body>
+</html>
